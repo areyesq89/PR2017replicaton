@@ -127,7 +127,6 @@ ggplot(data=drugCorrs_IC50, aes(x=Drug, y=Correlation, fill=Measure, group=Measu
   geom_bar(stat="identity", position=position_dodge(), colour="black") + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_fill_grey()
-
 ```
 
 Next, we'll make the same plot for the AUC correlations.
@@ -138,7 +137,6 @@ ggplot(data=drugCorrs_AUC, aes(x=Drug, y=Correlation, fill=Measure, group=Measur
   geom_bar(stat="identity", position=position_dodge(), colour="black") + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_fill_grey()
-
 ```
 
 The relative rankings of the drugs appears consistent between the IC50 and the AUC versions, however
