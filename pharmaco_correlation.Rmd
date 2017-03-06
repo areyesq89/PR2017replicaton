@@ -1,0 +1,162 @@
+---
+title: "Using Correlation Measures to Assess Replicability of Drug Response Studies"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Replicability of large Pharmacological Studies
+
+Intro to the two studies CCLE and CGP, the paper assessing their replicability, and general questions for thought.
+We'll probably want to have some slides discussing the general concepts of reproducibility and replicability, in
+case these are new concepts to students.  
+
+## Load CSV datasets containing the Pharmacological Data
+
+First, we'll generate and read in the .csv files produced by Alejandro's 'downloadData.R' script, which
+uses the `pharmacoGx` package to obtain curated data from both the CCLE and the GDSC (referred to 
+as CGP in the original publication, but more commonly referred to as GDSC, so we will use this term throughout). 
+The process of getting these summarized into a couple of tables is *not* trivial, and a lot of work goes on
+behind the scenes in order to actually match the cell lines and drugs used in both studies,
+as well as obtain comparable measures of drug responses (since the two studies measured very different
+sets of drug concentrations, and also used very different methods to summarize the dose-response curves -
+this issue is discussed in a separate vignette). 
+
+```{r read csv}
+#source("downloadData.R")
+cellLinesSummary <- read.csv("summarizedPharmacoData.csv", header=TRUE)
+str(cellLinesSummary)
+
+length(unique(cellLinesSummary$cellLine))
+length(unique(cellLinesSummary$drug))
+```
+
+Notice that there are 2,257 rows - each row here corresponds to a cell line-drug combination. 
+Making up these combinations are 288 unique cell lines, and 15 drugs (so right away we
+see that not every cell line was probed with each drug in both studies).
+
+## Reproduce Figure 2 in Haibe-Kains et al. 
+
+First, we'll set out to reproduce Figure 2 in the Haibe-Kains paper, which displays 
+scatter plots of IC50 values for the 15 drugs that were probed in both the CCLE and GDSC.
+Each panel in Figure 2 plots IC50 values for each cell line for a particular drug, with 
+the CGP measurements on the x-axis and the CCLE measurements on the y-axis.
+
+```{r Fig2 raw}
+library(ggplot2)
+ggplot(aes(x=ic50_GDSC, y=ic50_CCLE), data=cellLinesSummary) +
+    geom_point() + 
+    facet_wrap(facets=~drug)
+```
+
+We first try to plot the raw IC50 values for each study, but notice above that the distribution
+of the values from the GDSC is highly skewed in many of the comparisons, and that Figure 2 actually plots
+log-transformed values on the x-axis. Furthermore, Figure 2 reverses the sign of the values, presumably so 
+that increased plotted values generally represent increased drug concentration (dose) settings.
+
+```{r Fig2 log10}
+ggplot(aes(x=-log10(ic50_GDSC), y=-log10(ic50_CCLE)), data=cellLinesSummary) +
+    geom_point() + 
+    facet_wrap(facets=~drug)
+```
+
+Why do the ranges of the axes still not match? The concentrations reported in the `cellLinesSummary` 
+dataset are given in units of micro-molar, however the plots contain values calculated on the nano-molar
+scale (1000 times smaller)
+
+```{r Fig2 nano}
+ggplot(aes(x=-log10(ic50_GDSC/1000), y=-log10(ic50_CCLE/1000)), data=cellLinesSummary) +
+    geom_point() + 
+    facet_wrap(facets=~drug)
+```
+
+Not sure why the axes ranges still don't match up exactly. Could this have to do with the 'published'
+versus 'recomputed' values discussed in the follow-up f1000 paper?  The published version also does not
+show standardize axes ranges across plots like this version here.
+
+## Reproduce Extended Data Figure 5 in Haibe-Kains et al. 
+
+Here we will create a similar figure as the previous, except using AUC values instead of IC50 values 
+as the measure of sensitivity of the cell lines to each particular drug. This is shown in the Haibe-Kains et al.
+paper in the Extended Data Figure 5.
+
+```{r ED Fig5 raw}
+ggplot(aes(x=auc_GDSC, y=auc_CCLE), data=cellLinesSummary) +
+    geom_point() + 
+    facet_wrap(facets=~drug)
+```
+
+This appears to agree with the published version, depsite the Extended Data Figure 5 not 
+having standardized axes ranges like we have produced here. 
+
+## Compare correlations of the drug sensitivity measures
+
+Here we'll summarize different measures of correlation of the IC50 values to assess the level of 
+replication between these two experiments.  We'll compute three different measures for correlating 
+continous variables: the Pearson correlation coefficient, Spearman correlation coefficient, and 
+distance correlation.  Pearson is very sensitive to linear relationships, Spearman is a measure of 
+agreement in rankings, and distance correlation is a measure of dependence that can detect even 
+nonlinear relationships.
+
+```{r ic50 correlation}
+library(dplyr)
+library(energy)
+
+drugCorrs <- cellLinesSummary %>% 
+    group_by(drug) %>% summarise(Pearson_ic50=cor(-log10(ic50_GDSC/1000),-log10(ic50_CCLE/1000), method="pearson"),
+                                 Spearman_ic50=cor(-log10(ic50_GDSC/1000),-log10(ic50_CCLE/1000), method="spearman"),
+                                 Dist_ic50=dcor(-log10(ic50_GDSC/1000),-log10(ic50_CCLE/1000)),
+                                 Pearson_auc=cor(auc_GDSC,auc_CCLE, method="pearson"),
+                                 Spearman_auc=cor(auc_GDSC,auc_CCLE, method="spearman"),
+                                 Dist_auc=dcor(auc_GDSC,auc_CCLE))
+
+drugCorrs
+```
+
+We'll visualize these correlations, first for the IC50 measurements, in a grouped bar plot.
+
+```{r barplot correlations ic50}
+library(reshape2)
+drugCorrs <- melt(drugCorrs)
+colnames(drugCorrs) <- c("Drug", "Measure", "Correlation")
+
+drugCorrs_IC50 <- drugCorrs[grep("ic50", drugCorrs$Measure),]
+ggplot(data=drugCorrs_IC50, aes(x=Drug, y=Correlation, fill=Measure, group=Measure)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_grey()
+
+```
+
+Next, we'll make the same plot for the AUC correlations.
+
+```{r barplot correlations auc}
+drugCorrs_AUC <- drugCorrs[grep("auc", drugCorrs$Measure),]
+ggplot(data=drugCorrs_AUC, aes(x=Drug, y=Correlation, fill=Measure, group=Measure)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_grey()
+
+```
+
+The relative rankings of the drugs appears consistent between the IC50 and the AUC versions, however
+it is clear that the correlations of AUC values are systematically higher than the AUC versions. Also
+note that drugs like Nilotinib have very high Spearman's correlation of both IC50 and AUC (relative to the
+other correlation measures), likely due to a small number of points with high values in both datasets. This is
+related to the notion of cell line sensitivity, which may be an important factor to consider when evaluating
+how much the two datasets agree with one another with respect to the drug response results.
+
+## Exploring agreement of IC50 and AUC values by binarized drug sensitivity classes of cell lines
+
+TODO: Need to implement 'cutoffs' to determine which cell lines are 'sensitive' or resistant to each
+drug in each experiment
+
+Can use correlation metrics such as Somers, Matthews, and Cramer's V
+# library(Hmisc)
+# energy_ic50=somers2(-log10(ic50_GDSC/1000),-log10(ic50_CCLE/1000))
+
+## Exploring agreement of IC50 and AUC values taking into account drug classes (targeted versus broadly cytotoxic)
+
+TODO: split drugs into different classes: targeted (drugs that are specific to a certain type of cell, possibly due to a specific mutation or expression signature) vs broadly cytotoxic.  These categories are listed on page 9 of the f1000 paper. The consideration of this factor is important because "measured response in insensitive cell lines may represent random technical noise that one should not expect to be correlated between experiments"
