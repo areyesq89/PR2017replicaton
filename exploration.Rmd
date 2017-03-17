@@ -1,0 +1,48 @@
+---
+title: "Global exploration of the pharmacogenomic data"
+output: html_document
+---
+
+This vignette shows a couple of diagnostic plots
+that are commonly used to visualize datasets. Getting
+familiar with the data is important to understand
+what kind of questions we can answer with it. 
+     
+We start by loading the data into our R session. 
+
+```{r}
+rawFile <- "rawPharmacoData.csv"
+if( !file.exists( rawFile ) ){
+    source("downloadData.R")
+}
+pharmacoData <- read.csv(rawFile)
+```
+
+One of the first things data scientists do when
+starting analyzing datasets is to plot histograms.
+Histograms, appart from telling how is the data distributed,
+usually make evident obvious problems with the data.
+
+```{r}
+library(ggplot2)
+library(cowplot)
+ggplot( pharmacoData, aes( viability ) ) +
+    geom_histogram(fill = "white", colour="black")
+```
+
+For example, viability scores represent the percentage of cells
+that survive upon exposure to a drug. Based on this definition, should
+we expect values above 100 or below 0?
+
+```{r}
+sum( pharmacoData$viability < 0 )
+sum( pharmacoData$viability > 100 )
+sum( pharmacoData$viability >= 0 & pharmacoData$viability <= 100 )
+```
+	
+Is there an explanation for this?
+	
+```{r}
+ggplot( pharmacoData, aes( viability, group=study, colour=study) ) +
+    geom_density(fill="white", lwd=2, alpha=0.1) + xlim(0, 170)
+```
