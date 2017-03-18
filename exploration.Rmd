@@ -1,14 +1,16 @@
 ---
-title: "Global exploration of the pharmacogenomic data"
+title: "Global exploration of pharmacogenomic data"
 output: html_document
 ---
 
-This vignette shows a couple of diagnostic plots
-that are commonly used to visualize datasets. Getting
-familiar with the data is important to understand
-what kind of questions we can answer with it. 
+This vignette will guide you through a couple of diagnostic
+plots that are commonly used to visualize datasets. Getting
+familiar with a dataset is important to understand
+what kind of questions we can answer with it. Below, you will
+find some questions that will help you to get familiarized
+with the data. 
      
-We start by loading the data into our R session. 
+1. Read the data into your working session. 
 
 ```{r}
 rawFile <- "rawPharmacoData.csv"
@@ -18,31 +20,107 @@ if( !file.exists( rawFile ) ){
 pharmacoData <- read.csv(rawFile)
 ```
 
-One of the first things data scientists do when
-starting analyzing datasets is to plot histograms.
-Histograms, appart from telling how is the data distributed,
-usually make evident obvious problems with the data.
+2. What kind of variables are in the data? (e.g. cathegorical, numerical) What does each column represent?
+
+```{r}
+head( pharmacoData )
+sapply( pharmacoData, class )
+```
+
+3. How many drugs and cell lines are represented in the data?
+
+```{r}
+length( levels( pharmacoData$cellLine ) )
+length( levels( pharmacoData$drug ) )
+```
+
+4. How many drug concentrations were used in each study?
+
+```{r}
+tapply( pharmacoData$doseID, pharmacoData$study, function(x){
+        length( unique( x ) )
+    })
+```
+
+5. What drug concentrations were used in each study?
+
+```{r}
+tapply( pharmacoData$concentration, pharmacoData$study, function(x){
+        unique( x ) 
+    })
+```
+
+6. One of the first things data scientists do when
+   digging into new datasets is to explore the distributions
+   of the data. Histograms are informative about the the distribution
+   of the data and can tell us what statistical methods are appropiate to
+   model the data. Transform the data into a logarithmic
+   scale and plot a histogram of them separately for each
+   study. What study would you say has the most
+   consistent experimental protocol?
 
 ```{r}
 library(ggplot2)
 library(cowplot)
+ggplot( pharmacoData, aes( log2(concentration) ) ) +
+    geom_histogram(fill = "white", colour="black") +
+    facet_wrap(~study)
+```
+
+7. Histograms, appart from telling how is the data
+distributed, can also make evident potential
+problems with the data. Plot a histogram
+of drug viabilities. Does it look as one would
+expect from the description of the data?
+       
+```{r}
 ggplot( pharmacoData, aes( viability ) ) +
     geom_histogram(fill = "white", colour="black")
 ```
 
-For example, viability scores represent the percentage of cells
-that survive upon exposure to a drug. Based on this definition, should
-we expect values above 100 or below 0?
-
+8. Viability scores represent percentages
+   of cells that survive upon exposure to a certain drug.
+   Does the range of the viability data correspond
+   to this definition?
+	
 ```{r}
 sum( pharmacoData$viability < 0 )
 sum( pharmacoData$viability > 100 )
 sum( pharmacoData$viability >= 0 & pharmacoData$viability <= 100 )
 ```
-	
-Is there an explanation for this?
-	
+9. Compare the distribution of viability scores between the two studies.
+   Are there obvious differences between these two distributions?
+		
 ```{r}
 ggplot( pharmacoData, aes( viability, group=study, colour=study) ) +
     geom_density(fill="white", lwd=2, alpha=0.1) + xlim(0, 170)
 ```
+
+10. Plot the viability scores as boxplots for each drug separately for each study.
+    Can you tell something about the toxic properties of the different drugs? Are
+    these properties consistent across studies?
+
+```{r}
+ggplot( pharmacoData, aes( y=viability, x=drug, fill=study) ) +
+    geom_boxplot() +
+ #   facet_grid(study~.) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=.5)) +
+    ylim(0, 200)
+```
+
+11. Think about additional questions that can be answered by plotting
+    the data distributions in different manners.
+		
+12. Now read the summarized data and get familizaried with its content,
+    as you did before.
+
+```{r}
+summarizedFile <- "summarizedPharmacoData.csv"
+if( !file.exists( summarizedFile ) ){
+    source("downloadData.R")
+}
+summarizedData <- read.csv(rawFile)
+head( summarizedData )
+sapply( summarizedData, class )
+```
+13. 
