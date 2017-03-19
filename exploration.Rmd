@@ -1,18 +1,33 @@
 ---
-title: "Global exploration of pharmacogenomic data"
+title: Exploratory analysis of pharmacogenomic data
 output: html_document
 ---
 
-This vignette will guide you through a couple of diagnostic
-plots that are commonly used to visualize datasets. Getting
-familiar with a dataset is important to understand
+```{r echo=FALSE}
+knitr::opts_chunk$set(cache=FALSE)
+```
+
+## Introduction
+
+Probably the most important step of analyzing datasets is to get familiar
+with the data. This process is very important to understand
 what kind of questions we can answer with it. Below, you will
-find some questions that will help you to get familiarized
-with the data. 
+find some questions that will help guiding you through this 
+process. There are many different ways to get to an answer and 
+there is not a solution that is universally better than the others. 
+While answering these questions, try to come up with possible 
+explanations for your observations. For example, can these observations
+be explained by biology or by experimental protocol limitations?
+Are these observations consistent between studies?
+
+Remember that if you provide code that reproduces your results, it
+will be easier to communicate them to the public. 
+
+## Questionnaire 
      
 1. Read the data into your working session. 
 
-```{r}
+```{r readRaw}
 rawFile <- "rawPharmacoData.csv"
 if( !file.exists( rawFile ) ){
     source("downloadData.R")
@@ -20,23 +35,23 @@ if( !file.exists( rawFile ) ){
 pharmacoData <- read.csv(rawFile)
 ```
 
-2. What kind of variables are in the data? (e.g. cathegorical, numerical) What does each column represent?
+2. What kind of variables are in the data? Are these variables numerical and/or categorical? What does each column represent?
 
-```{r}
+```{r quest2}
 head( pharmacoData )
 sapply( pharmacoData, class )
 ```
 
-3. How many drugs and cell lines are represented in the data?
+3. How many drugs and cell-lines are represented in the data?
 
-```{r}
+```{r quest3}
 length( levels( pharmacoData$cellLine ) )
 length( levels( pharmacoData$drug ) )
 ```
 
 4. How many drug concentrations were used in each study?
 
-```{r}
+```{r quest4}
 tapply( pharmacoData$doseID, pharmacoData$study, function(x){
         length( unique( x ) )
     })
@@ -44,7 +59,7 @@ tapply( pharmacoData$doseID, pharmacoData$study, function(x){
 
 5. What drug concentrations were used in each study?
 
-```{r}
+```{r quest5}
 tapply( pharmacoData$concentration, pharmacoData$study, function(x){
         unique( x ) 
     })
@@ -52,14 +67,14 @@ tapply( pharmacoData$concentration, pharmacoData$study, function(x){
 
 6. One of the first things data scientists do when
    digging into new datasets is to explore the distributions
-   of the data. Histograms are informative about the the distribution
-   of the data and can tell us what statistical methods are appropiate to
+   of the data. Histograms are informative about the distribution
+   of the data and can tell us what statistical methods are appropriate to
    model the data. Transform the data into a logarithmic
    scale and plot a histogram of them separately for each
    study. What study would you say has the most
    consistent experimental protocol?
 
-```{r}
+```{r quest6}
 library(ggplot2)
 library(cowplot)
 ggplot( pharmacoData, aes( log2(concentration) ) ) +
@@ -96,7 +111,7 @@ ggplot( pharmacoData, aes( viability, group=study, colour=study) ) +
     geom_density(fill="white", lwd=2, alpha=0.1) + xlim(0, 170)
 ```
 
-10. Plot the viability scores as boxplots for each drug separately for each study.
+10. Plot the viability scores as box-plots for each drug separately for each study.
     Can you tell something about the toxic properties of the different drugs? Are
     these properties consistent across studies?
 
@@ -111,7 +126,7 @@ ggplot( pharmacoData, aes( y=viability, x=drug, fill=study) ) +
 11. Think about additional questions that can be answered by plotting
     the data distributions in different manners.
 		
-12. Now read the summarized data and get familizaried with its content,
+12. Now read the summarized data and get familiar with its content,
     as you did before.
 
 ```{r}
@@ -119,8 +134,26 @@ summarizedFile <- "summarizedPharmacoData.csv"
 if( !file.exists( summarizedFile ) ){
     source("downloadData.R")
 }
-summarizedData <- read.csv(rawFile)
+summarizedData <- read.csv(summarizedFile)
 head( summarizedData )
 sapply( summarizedData, class )
 ```
-13. 
+
+13. Are there cell-lines that are overall more susceptible to drug exposure?
+
+```{r}
+meanEffectPerCellLine <-  with( summarizedData,
+                               tapply( auc_CCLE, cellLine, mean ) )
+sortedMeanEffects <- sort( meanEffectPerCellLine )
+moreResistant <- names( head( sortedMeanEffects, 6 ) )
+lessResistant <- names( tail( sortedMeanEffects, 6 ) )
+summarizedDataSubset <- dplyr:::filter( summarizedData, cellLine %in% c( moreResistant, lessResistant ) )
+ggplot( summarizedDataSubset, aes( cellLine, auc_CCLE ) ) +
+    geom_point() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=.5))
+pharmacoDataSubset <- dplyr:::filter( pharmacoData, cellLine %in% c( moreResistant, lessResistant ) )
+ggplot( pharmacoDataSubset, aes( cellLine, viability, fill=study) ) +
+    geom_boxplot() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=.5)) +
+    ylim(0, 200)
+```
