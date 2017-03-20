@@ -54,7 +54,7 @@ Was every cell line in the dataset tested with every drug?
 
 ## Comparing response of drug AZD0530 in the two studies
 
-So we now have summary measures (IC50 and AUC) that indicate the response of each cell line to each drug (though not all combinations were included). However, each study measured these values independently. The goal of this analysis is to _investigate how well these two studies agree with each other_. In other words, do the drug response results in one study *replicate* in the other study? 
+So we now have summary measures (IC50 and AUC) that indicate the response of each cell line to each drug (though not all combinations were included). However, each study measured these values independently. The goal of this analysis is to **investigate how well these two studies agree with each other**. In other words, do the drug response results in one study **replicate** in the other study? 
 
 First, we'll examine this question for one of the drugs in particular: AZD0530. We'll start out by visually exploring how the AUC values for AZD0530 compare in the two datasets using a scatterplot.
 
@@ -163,9 +163,9 @@ One way to quantify the degree of agreement of two variables is to calculate the
 
 Note that there are several different types of correlations. For example, we might say that two variables are in agreement if they fall along a straight line when plotted against eachother. Or, we might say they two are in agreement if an increase in one tends to be associated with an increase in the other (but not necessarily along a straight line). We'll start by examining two different types:
 
-1. _Pearson's_ correlation coefficient: measures the degree of *linear* association 
+1. **Pearson's** correlation coefficient: measures the degree of *linear* association 
 
-2. _Spearman's_ correlation coefficient: measures the agreement of the *rankings* of the values of one variable compared to the other.
+2. **Spearman's** correlation coefficient: measures the agreement of the *rankings* of the values of one variable compared to the other.
 
 Here we'll summarize different measures of correlation of the IC50 values and the AUC values to assess the level of 
 replication between these two experiments. First, we'll compute the two different measures for correlating 
