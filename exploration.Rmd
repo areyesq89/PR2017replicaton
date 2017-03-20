@@ -1,5 +1,5 @@
 ---
-title: Tutorial 1: Exploratory analysis of pharmacogenomic data
+title: "Tutorial 1: Exploratory analysis of pharmacogenomic data"
 output: html_document
 ---
 

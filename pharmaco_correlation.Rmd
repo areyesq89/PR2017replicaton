@@ -1,5 +1,5 @@
 ---
-title: "Tutorial 2: Using Correlation Measures to Assess Replicability of Drug Response Studies""
+title: "Tutorial 2: Using Correlation Measures to Assess Replicability of Drug Response Studies"
 output: html_document
 ---
 
