@@ -9,23 +9,35 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Replicability of large Pharmacological Studies
 
-Intro to the two studies CCLE and CGP, the paper assessing their replicability, and general questions for thought.
-We'll probably want to have some slides discussing the general concepts of reproducibility and replicability, in
-case these are new concepts to students.  
+Hopefully you have had the chance to explore the features of the CCLE and GDSC drug response datasets. If not, it might be a good idea to check out the vignette on 'Exploratory analysis of pharmacogenomic data' to get a feel for what types of variables the datasets contain, and learn about the difference between the raw dataset, which contains the cell line viability at each drug concentration, and the summarized dataset, which contains numerical summaries of the cell lines response to a drug over all concentrations. We'll briefly explore what this means in the next section.
 
-## Load CSV datasets containing the Pharmacological Data
+## Summary measurements of drug response
 
-First, we'll generate and read in the .csv files produced by Alejandro's 'downloadData.R' script, which
-uses the `pharmacoGx` package to obtain curated data from both the CCLE and the GDSC (referred to 
-as CGP in the original publication, but more commonly referred to as GDSC, so we will use this term throughout). 
-The process of getting these summarized into a couple of tables is *not* trivial, and a lot of work goes on
-behind the scenes in order to actually match the cell lines and drugs used in both studies,
-as well as obtain comparable measures of drug responses (since the two studies measured very different
-sets of drug concentrations, and also used very different methods to summarize the dose-response curves -
-this issue is discussed in a separate vignette). 
+Recall that in the summarized dataset, for each cell line and drug combination, the cell line viability over all drug concentrations has been summarized into a single number, which represents the *overall effect of the drug on the cell line*. Essentially, There are many different ways this could be done, and our data provides two possible measures: 
+
+1. IC50: the estimated concentration of the drug that will result in half (50%) of the cells surviving. 
+
+![](Figures/IC50.jpg)
+
+Are cell lines with higher IC50 values more or less susceptible? What about drugs with higher IC50 values - are they more or less toxic?
+
+
+> Place your answer here
+
+
+2. AUC (Area Under the Curve): the area under the curve estimated by the drug concentration and viability data. Note that the estimation of this curve is not a simple task in itself - check out the vignette on summarizing the relationship between two variables to learn more. 
+
+![](Figures/AUC.jpg)
+
+Are cell lines with higher values of AUC more or less resistant? Are drugs with higher AUC more or less toxic?
+
+> Place your answer here
+
+
+## Load the summarized pharmacological dataset into the session
+First, we'll read in the .csv file that contains the summarized pharmacological data (including the IC50 and AUC values for each drug and cell line combination, as described above). 
 
 ```{r read csv}
-#source("downloadData.R")
 cellLinesSummary <- read.csv("summarizedPharmacoData.csv", header=TRUE)
 str(cellLinesSummary)
 
@@ -34,88 +46,144 @@ length(unique(cellLinesSummary$drug))
 ```
 
 Notice that there are 2,257 rows - each row here corresponds to a cell line-drug combination. 
-Making up these combinations are 288 unique cell lines, and 15 drugs (so right away we
-see that not every cell line was probed with each drug in both studies).
+Making up these combinations are 288 unique cell lines, and 15 drugs. 
 
-## Reproduce Figure 2 in Haibe-Kains et al. 
+Was every cell line in the dataset tested with every drug?
 
-First, we'll set out to reproduce Figure 2 in the Haibe-Kains paper, which displays 
-scatter plots of IC50 values for the 15 drugs that were probed in both the CCLE and GDSC.
-Each panel in Figure 2 plots IC50 values for each cell line for a particular drug, with 
-the CGP measurements on the x-axis and the CCLE measurements on the y-axis.
+> Place your answer here
+
+## Comparing response of drug AZD0530 in the two studies
+
+So we now have summary measures (IC50 and AUC) that indicate the response of each cell line to each drug (though not all combinations were included). However, each study measured these values independently. The goal of this analysis is to _investigate how well these two studies agree with each other_. In other words, do the drug response results in one study *replicate* in the other study? 
+
+First, we'll examine this question for one of the drugs in particular: AZD0530. We'll start out by visually exploring how the AUC values for AZD0530 compare in the two datasets using a scatterplot.
+
+```{r AUC 1 drug}
+library(ggplot2)
+ggplot(aes(x=auc_GDSC, y=auc_CCLE), data=subset(cellLinesSummary, drug=="AZD0530")) +
+    geom_point() +
+    xlab("GDSC AUC") +
+    ylab("CCLE AUC") 
+```
+
+How would you describe the level of agreement between the AUC values of drug AZD0530 in the CCLE and GDSC studies? Does it seem like higher values of AUC in the GDSC correspond to higher values in the CCLE?
+
+> Place your answer here
+
+Next, let's look at the same type of scatterplot for the IC50 values. 
+
+```{r ic50 1 drug}
+ggplot(aes(x=ic50_GDSC, y=ic50_CCLE), data=subset(cellLinesSummary, drug=="AZD0530")) +
+    geom_point() +
+    xlab("GDSC IC50") +
+    ylab("CCLE IC50") 
+```
+
+What is different about this plot compared to the AUC plot for this drug above? 
+
+First, notice that there are many points with the highest value of IC50 for CCLE. Recall that this study measured a fixed set of doses, regardless of how the cells responded, whereas in the GDSC drug concentrations were increased until half of the cells were killed. What does this mean for the IC50 values in the CCLE? Are they more likely to be too high or too low? Why?
+
+> Place your answer here
+
+Another thing to notice is that there is a very large range of IC50 values in the GDSC, but most values are small. This indicates a *skewed* distribution that may benefit from a log-transformation. Next, we'll plot log10-transformed values of IC50. We'll also plot *negative* values, so that increasing values of IC50 represent increasing drug toxicity (to make the plot more comparable to the AUC plot above).
+
+```{r ic50 1 drug log}
+ggplot(aes(x=-log10(ic50_GDSC), y=-log(ic50_CCLE)), data=subset(cellLinesSummary, drug=="AZD0530")) +
+    geom_point() +
+    xlab("-log10(GDSC IC50)") +
+    ylab("-log10(CCLE IC50)") 
+```
+
+
+How would you describe the level of agreement between the IC50 values of drug AZD0530 in the CCLE and GDSC studies? Does it seem like higher values of AUC in the GDSC correspond to higher values in the CCLE?
+
+> Place your answer here
+
+## Comparing summary measures of drug response across all drugs
+
+So far, we have only looked at how well the two studies agree for the response measurements of a single drug. However, we need to look at the rest of the drugs to fully assess the level of replication. First, we set out to reproduce Figure 2 in the Haibe-Kains paper, which displays 
+scatter plots of IC50 values for the 15 drugs that were probed in both the CCLE and GDSC. Essentially, we are going to make the plots from the previous section for all 15 drugs at once and compare them side-by-side.
 
 ```{r Fig2 raw}
-library(ggplot2)
-ggplot(aes(x=ic50_GDSC, y=ic50_CCLE), data=cellLinesSummary) +
-    geom_point() + 
-    facet_wrap(facets=~drug)
-```
-
-We first try to plot the raw IC50 values for each study, but notice above that the distribution
-of the values from the GDSC is highly skewed in many of the comparisons, and that Figure 2 actually plots
-log-transformed values on the x-axis. Furthermore, Figure 2 reverses the sign of the values, presumably so 
-that increased plotted values generally represent increased drug concentration (dose) settings.
-
-```{r Fig2 log10}
 ggplot(aes(x=-log10(ic50_GDSC), y=-log10(ic50_CCLE)), data=cellLinesSummary) +
     geom_point() + 
-    facet_wrap(facets=~drug)
+    facet_wrap(facets=~drug) +
+    xlab("-log10(GDSC IC50)") +
+    ylab("-log10(CCLE IC50)") 
 ```
 
-Why do the ranges of the axes still not match? The concentrations reported in the `cellLinesSummary` 
-dataset are given in units of micro-molar, however the plots contain values calculated on the nano-molar
-scale (1000 times smaller)
+Why do the ranges of the axes not exactly match the axes in Figure 2 of the published paper? Note that the concentrations reported in the `cellLinesSummary` dataset are given in units of mili-molar, however the plots contain values calculated on the nano-molar
+scale (1 million times smaller). Thus, we can reproduce the original plot's scale by scaling the concentration values by 10^6.
 
 ```{r Fig2 nano}
-ggplot(aes(x=-log10(ic50_GDSC/1000), y=-log10(ic50_CCLE/1000)), data=cellLinesSummary) +
+ggplot(aes(x=-log10(ic50_GDSC/10^6), y=-log10(ic50_CCLE/10^6)), data=cellLinesSummary) +
     geom_point() + 
-    facet_wrap(facets=~drug)
+    facet_wrap(facets=~drug) +
+    xlab("-log10(GDSC IC50/10^6)") +
+    ylab("-log10(CCLE IC50/10^6)") 
 ```
 
-Not sure why the axes ranges still don't match up exactly. Could this have to do with the 'published'
-versus 'recomputed' values discussed in the follow-up f1000 paper?  The published version also does not
-show standardize axes ranges across plots like this version here.
+Looking at the IC50 values for both studies across all 15 drugs, would you say that they tend to agree? Why or why not?
 
-## Reproduce Extended Data Figure 5 in Haibe-Kains et al. 
+> Place your answer here
 
-Here we will create a similar figure as the previous, except using AUC values instead of IC50 values 
-as the measure of sensitivity of the cell lines to each particular drug. This is shown in the Haibe-Kains et al.
-paper in the Extended Data Figure 5.
+Next, we'll create a similar figure as above, but for the other summary measure (AUC). This is shown in the Extended Data Figure 5 in Haibe-Kains et al. paper.
 
 ```{r ED Fig5 raw}
 ggplot(aes(x=auc_GDSC, y=auc_CCLE), data=cellLinesSummary) +
     geom_point() + 
-    facet_wrap(facets=~drug)
+    facet_wrap(facets=~drug) +
+    xlab("-log10(GDSC AUC)") +
+    ylab("-log10(CCLE AUC)") 
 ```
 
-This appears to agree with the published version, depsite the Extended Data Figure 5 not 
-having standardized axes ranges like we have produced here. 
+Looking at the AUC values for both studies across all 15 drugs, would you say that they tend to agree? Why or why not?
+
+> Place your answer here
+
+Which measure (AUC or IC50) suggests more agreement between the studies? Why do you think this is so?
+
+> Place your answer here
+
+Which drug do you think shows the most consistent results between the two studies? Why?
+
+> Place your answer here
+
+Which drug do you think shows the least consistent results between the two studies? Why?
+
+> Place your answer here
+
+We have visually inspected the agreement of the drug response data between the two studies. Now, we'd like to go a step further and quantify the agreement with statistics. We'll start by exploring measures of correlation.
 
 ## Compare correlations of the drug sensitivity measures
 
-Here we'll summarize different measures of correlation of the IC50 values to assess the level of 
-replication between these two experiments.  We'll compute three different measures for correlating 
-continous variables: the Pearson correlation coefficient, Spearman correlation coefficient, and 
-distance correlation.  Pearson is very sensitive to linear relationships, Spearman is a measure of 
-agreement in rankings, and distance correlation is a measure of dependence that can detect even 
-nonlinear relationships.
+One way to quantify the degree of agreement of two variables is to calculate the *correlation*. Correlation is a statistic between -1 and 1 that measures the degree of association between two variables. In this case our two variables are the drug response in CCLE and the drug response for GDSC. The higher the correlation value, the more the two variables agree with one other. If two variables are exactly the same, then the correlation is equal to 1. If two variables are unrelated, then the correlation value will be close to zero. What would a negative correlation mean?
+
+> Place your answer here
+
+Note that there are several different types of correlations. For example, we might say that two variables are in agreement if they fall along a straight line when plotted against eachother. Or, we might say they two are in agreement if an increase in one tends to be associated with an increase in the other (but not necessarily along a straight line). We'll start by examining two different types:
+
+1. _Pearson's_ correlation coefficient: measures the degree of *linear* association 
+
+2. _Spearman's_ correlation coefficient: measures the agreement of the *rankings* of the values of one variable compared to the other.
+
+Here we'll summarize different measures of correlation of the IC50 values and the AUC values to assess the level of 
+replication between these two experiments. First, we'll compute the two different measures for correlating 
+continous variables mentioned above (Pearson and Spearman correlation coefficients).
 
 ```{r ic50 correlation}
 library(dplyr)
-library(energy)
 
 drugCorrs <- cellLinesSummary %>% 
-    group_by(drug) %>% summarise(Pearson_ic50=cor(-log10(ic50_GDSC/1000),-log10(ic50_CCLE/1000), method="pearson"),
-                                 Spearman_ic50=cor(-log10(ic50_GDSC/1000),-log10(ic50_CCLE/1000), method="spearman"),
-                                 Dist_ic50=dcor(-log10(ic50_GDSC/1000),-log10(ic50_CCLE/1000)),
+    group_by(drug) %>% summarise(Pearson_ic50=cor(-log10(ic50_GDSC/10^6),-log10(ic50_CCLE/10^6), method="pearson"),
+                                 Spearman_ic50=cor(-log10(ic50_GDSC/10^6),-log10(ic50_CCLE/10^6), method="spearman"),
                                  Pearson_auc=cor(auc_GDSC,auc_CCLE, method="pearson"),
-                                 Spearman_auc=cor(auc_GDSC,auc_CCLE, method="spearman"),
-                                 Dist_auc=dcor(auc_GDSC,auc_CCLE))
+                                 Spearman_auc=cor(auc_GDSC,auc_CCLE, method="spearman"))
 
 drugCorrs
 ```
 
-We'll visualize these correlations, first for the IC50 measurements, in a grouped bar plot.
+Next, we'll visualize these correlations, first for the IC50 measurements, in a grouped bar plot.
 
 ```{r barplot correlations ic50}
 library(reshape2)
@@ -139,22 +207,37 @@ ggplot(data=drugCorrs_AUC, aes(x=Drug, y=Correlation, fill=Measure, group=Measur
   scale_fill_grey()
 ```
 
-The relative rankings of the drugs appears consistent between the IC50 and the AUC versions, however
-it is clear that the correlations of AUC values are systematically higher than the AUC versions. Also
-note that drugs like Nilotinib have very high Spearman's correlation of both IC50 and AUC (relative to the
-other correlation measures), likely due to a small number of points with high values in both datasets. This is
-related to the notion of cell line sensitivity, which may be an important factor to consider when evaluating
-how much the two datasets agree with one another with respect to the drug response results.
+Which measure (AUC or IC50) suggests more agreement between the studies? Does this agree to your answer to this same question in the previous section using visual inspection?
 
-## Exploring agreement of IC50 and AUC values by binarized drug sensitivity classes of cell lines
+> Place your answer here
 
-TODO: Need to implement 'cutoffs' to determine which cell lines are 'sensitive' or resistant to each
-drug in each experiment
+Examining these correlation values, which drug do you think shows the most consistency between the studies? How about the least? Does this agree with your visual assessment and answers to these same questions in the previous section?
 
-Can use correlation metrics such as Somers, Matthews, and Cramer's V
-# library(Hmisc)
-# energy_ic50=somers2(-log10(ic50_GDSC/1000),-log10(ic50_CCLE/1000))
+> Place your answer here
 
-## Exploring agreement of IC50 and AUC values taking into account drug classes (targeted versus broadly cytotoxic)
+Examine the results for the drug Nilotinib. Why does this drug seem to have a high Pearson correlation, but a low Spearman correlation? 
 
-TODO: split drugs into different classes: targeted (drugs that are specific to a certain type of cell, possibly due to a specific mutation or expression signature) vs broadly cytotoxic.  These categories are listed on page 9 of the f1000 paper. The consideration of this factor is important because "measured response in insensitive cell lines may represent random technical noise that one should not expect to be correlated between experiments"
+> Place your answer here
+
+## Further exploration
+
+Here are some suggestions and questions for you to explore with your team:
+
+1. We have explored Pearson's and Spearman correlation, but what about other correlation measures? For example, you could try out distance correlation, which is sensitive to nonlinear relationships. You can find this measure in the `energy' R package, which you'll need to install and load with the following commands:
+
+    ```{r, eval=FALSE}
+install.packages("energy")
+load(energy)
+```
+
+    Then, you can compute distance correlation with the `dcor()` function. How does this correlation measure compare to Pearson's and Spearman's? Do your conclusions about the agreement between the two studies change at all using this measure?
+
+2. In the analyses thus far, we have treated all cell lines and drugs equally. However, we know that some cell lines may be more sensitive to drug treatment. We also know that some drugs may be more toxic than others. Consider, for example, a drug that is not very effective (low toxicity) on any cell line. Would you expect that drug to show high correlation of AUC and IC50 between the two studies? What about a drug that is extremely toxic to some of the cell lines? 
+
+    The drug Crizotinib is known to be toxic only to a small subset of cell lines. Are the results of the two studies consistent with this?
+
+    The drug Sorafenib is not very toxic to any of the cell lines in the study. Should we conclude that the studies were not in agreement if the correlations for this drug were low?
+
+    To explore this even further, visit the vignette that contains an introduction to pharmacogenomic analyses. 
+
+
