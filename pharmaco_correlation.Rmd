@@ -106,7 +106,7 @@ scatter plots of IC50 values for the 15 drugs that were probed in both the CCLE 
 
 ```{r Fig2 raw}
 ggplot(aes(x=-log10(ic50_GDSC), y=-log10(ic50_CCLE)), data=cellLinesSummary) +
-    geom_point() + 
+    geom_point(cex=0.5) + 
     facet_wrap(facets=~drug) +
     xlab("-log10(GDSC IC50)") +
     ylab("-log10(CCLE IC50)") 
@@ -117,7 +117,7 @@ scale (1 million times smaller). Thus, we can reproduce the original plot's scal
 
 ```{r Fig2 nano}
 ggplot(aes(x=-log10(ic50_GDSC/10^6), y=-log10(ic50_CCLE/10^6)), data=cellLinesSummary) +
-    geom_point() + 
+    geom_point(cex=0.5) + 
     facet_wrap(facets=~drug) +
     xlab("-log10(GDSC IC50/10^6)") +
     ylab("-log10(CCLE IC50/10^6)") 
@@ -131,10 +131,10 @@ Next, we'll create a similar figure as above, but for the other summary measure 
 
 ```{r ED Fig5 raw}
 ggplot(aes(x=auc_GDSC, y=auc_CCLE), data=cellLinesSummary) +
-    geom_point() + 
+    geom_point(cex=0.5) + 
     facet_wrap(facets=~drug) +
-    xlab("-log10(GDSC AUC)") +
-    ylab("-log10(CCLE AUC)") 
+    xlab("GDSC AUC") +
+    ylab("CCLE AUC") 
 ```
 
 Looking at the AUC values for both studies across all 15 drugs, would you say that they tend to agree? Why or why not?
@@ -223,7 +223,7 @@ Examine the results for the drug Nilotinib. Why does this drug seem to have a hi
 
 Here are some suggestions and questions for you to explore with your team:
 
-1. We have explored Pearson's and Spearman correlation, but what about other correlation measures? For example, you could try out distance correlation, which is sensitive to nonlinear relationships. You can find this measure in the `energy' R package, which you'll need to install and load with the following commands:
+1. We have explored Pearson's and Spearman correlation, but what about other correlation measures? For example, you could try out distance correlation, which is sensitive to nonlinear relationships. You can find this measure in the `energy` R package, which you'll need to install and load with the following commands:
 
     ```{r, eval=FALSE}
 install.packages("energy")
