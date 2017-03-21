@@ -1,5 +1,5 @@
 ---
-title: "Tutorial 3: Introduction to Pharmacogenomics and Personalized Cancer Treatment"
+title: "Tutorial 3: Identifying biological factors that influence replicability of pharmacogenomic studies"
 output: html_document
 ---
 
@@ -22,7 +22,7 @@ Andrew Goodspeed, et al. Mol Cancer Res, 2016.
 
 The CCLE and GDSC studies both investigated genomic profiles for all the cell lines that were used to study drug response. The genomic profiles collected included gene expression measurements for more than 10,000 genes in every cell line (measured by microarray) and mutation status for a subset of 64 genes in every cell line (measured by targeted sequencing). We will not have time to explore this data, but it is available through the R package `PharmacoGx` if you wish to explore it for a future project. 
 
-The main finding of Haibe-Kains et al. (2013) was that the genomic profiles of the cell lines used in both studies were highly correlated. What you have probably found so far in your explorations of comparing the summary measures of drug response is that the agreement between the studies does not seem highly reproducible. Part of this may be explained by differences in protocol (which you will have noticed in the different drug concentrations tested in the two studies). In the rest of this vignette, we'll investigate further sources of variation and biological mechanisms that might explain some of this lack of agreement.
+The main finding of Haibe-Kains et al. (2013) was that the genomic profiles of the cell lines used in both studies were highly correlated. What you might have found so far in your explorations of comparing the summary measures of drug response is that the agreement between the studies does not seem as highly reproducible. Part of this may be explained by differences in protocol (which you can see in the different drug concentrations tested in the two studies). In the rest of this vignette, we'll investigate further sources of variation and biological mechanisms that might explain some of this lack of agreement.
 
 ## Load the summarized pharmacological dataset into the session
 First, we'll read in the .csv file that contains the summarized pharmacological data (including the IC50 and AUC values for each drug and cell line combination, as described above). 
@@ -32,16 +32,192 @@ cellLinesSummary <- read.csv("summarizedPharmacoData.csv", header=TRUE)
 str(cellLinesSummary)
 ```
 
-## Resistant versus Sensitive Cell lines
+## Resistance of Cell lines and the effect on replicability
 
-TO DO: Lead through reproducing Figure 7 in F1000 paper. Implement 'cutoffs' to determine which cell lines are 'sensitive' or 'resistant' to each
-drug in each experiment using AUC. Use Matthews correlation to assess agreement of 0/1 classificaitons - simplest to compute by hand?
+Something that was not considered in the original comparison analyses by Haibe-Kains et al. was that different cell lines may more or less **resistant** (resistance means that the cell line does not respond to treatment by a drug) to drug treatment than others. Let's explore first why that might be an important factor, and then directly compare cell line sensitivity in the two studies. 
+
+Consider the following situation: say we have a set of cell lines that are resistant to a particular drug (they don't respond to it). Then we would expect that no matter what dose we give to the cell lines, their viability results would not change (they would stay near 100%). In this case, the AUC (area above the response curve) value would be near zero since the dose-response curve would look flat:
+
+![](Figures/resistant.jpg)
+
+What would the IC50 value be in this case? 
+
+> Place your answer here
+
+Assuming the results in both studies were consistent, then a scatterplot of the AUC values in this case would look like this (allowing for experimental error - we don't expect to get exactly 100% viability at each dose due to variations in the experimental conditions and cellular growth rates):
+
+```{r, AUC resistant}
+library(ggplot2)
+AUC_study1 <- rbeta(200, 1, 5)
+AUC_study2 <- rbeta(200, 1, 5)
+resistant <- data.frame(AUC_study1, AUC_study2)
+ggplot(resistant, aes( y=AUC_study2, x=AUC_study1) ) +
+    geom_point() + ggtitle("Simulated AUC of resistant cell lines") +
+    xlim(0,1) + ylim(0,1)
+```
+
+Here we have simulated the AUC values in each study to be closer to zero but with some random variability (this is done here using the Beta distribution). Do these AUC values look correlated? Calculate a correlation coefficient to quantify the correlation.
+
+> Place your answer here
+
+Now, consider the situation where only half of the cell lines are resistant (with AUC values close to zero) and half are sensitive (with high AUC values). 
+
+```{r, AUC sensitive}
+AUC_study1 <- c(rbeta(100, 1, 5), rbeta(100, 4, 2))
+AUC_study2 <- c(rbeta(100, 1, 5), rbeta(100, 4, 2))
+resistant <- data.frame(AUC_study1, AUC_study2, 
+                        CellLine=c(rep("Resistant", 100), rep("Sensitive", 100)))
+ggplot(resistant, aes( y=AUC_study2, x=AUC_study1, colour=CellLine) ) +
+    geom_point() + ggtitle("Simulated AUC with half sensitive and half resistant cell lines") +
+    xlim(0,1) + ylim(0,1)
+```
+
+Here we have simulated half the AUC values in each study to be closer to zero and half to be closer to one but with some random variability (using the Beta distribution again). Do these AUC values look correlated? Calculate a correlation coefficient to quantify the correlation.
+
+> Place your answer here
+
+If all cell lines are resistant to a particular drug, would you expect to find a high correlation between the two studies for that drug? Would that result imply that the two studies are not replicable?
+
+> Place your answer here
+
+Now, let's explore the average drug responses by cell line. First, we'll compute the average drug responses by cell line (averaged over all drugs). Then we'll create a scatterplot to compare these averages in the two studies.
+
+```{r, ic50 by cell line}
+library(tidyr)
+library(plyr)
+library(dplyr)
+
+drugAvg <- cellLinesSummary %>% 
+              group_by(cellLine) %>%
+              summarise(mean_ic50_CCLE = mean(-log10(ic50_CCLE/10^6)), 
+                        mean_ic50_GDSC = mean(-log10(ic50_GDSC/10^6)),
+                        mean_auc_CCLE = mean(auc_CCLE),
+                        mean_auc_GDSC = mean(auc_GDSC)) 
+
+ggplot(drugAvg, aes(x=mean_ic50_GDSC, y=mean_ic50_CCLE)) +
+    geom_point(alpha=0.6) +
+    ggtitle("Average IC50 value by cell line (averaged over drugs)")
+```
+
+Find 5 cell lines which seem the most resistant in both studies according to the average IC50.
+
+> Place your answer here
+
+```{r, auc by cell line}
+ggplot(drugAvg, aes(x=mean_auc_GDSC, y=mean_auc_CCLE)) +
+    geom_point(alpha=0.6) +
+    ggtitle("Average AUC value by cell line (averaged over drugs)")
+```
+
+Find 5 cell lines which seem the most resistant in both studies according to the average AUC.
+
+> Place your answer here
+
+Are the answers above consistent for both IC50 and AUC?
+
+> Place your answer here
+
+## Replicability results for sensitive versus resistant cell lines
+
+So far we've seen that the sensitivity of cell lines can have major implications for the perceived replicability of studies if we use standard correlation measures for assessment. For this reason, some of the followup articles indicated that sensitivity should be taken into account in this kind of analysis. How can we consider sensitivity when assessing replicability of the two studies? One idea is to assess the agreement between the studies on which cell lines were sensitive or resistant (instead of agreement on the actual values of AUC or IC50).  
+
+To assess agreement between the studies on which cell lines were sensitive or resistant, we first have to define criteria for deciding whether a cell line is resistant or not. In other words, we'd like to choose an AUC cutoff that divides sensitive and resistant responses. This choice is somewhat arbitrary, but for now we'll choose the values used by the Safikhani et al. paper that explored this concept: AUC values 0.2 or higher indicate that the cell line is sensitive to the drug, and AUC values below 0.2 indicate that the cell line is resistant (unless no cell lines had observed AUC values above 0.2 in either study, then use 0.4. This is the case for the broadly cytotoxic drug paclitaxel). 
+
+Let's go ahead and add sensitivity variables to our dataset, and explore their basic properties.
+
+```{r, create sensitivity}
+cellLinesSummary <- cellLinesSummary %>% 
+              mutate(cutoff = ifelse(drug=="paclitaxel", 0.4, 0.2)) %>%
+              mutate(sensitivity_GDSC = ifelse( auc_GDSC < cutoff, "Sensitive", "Resistant"), 
+                     sensitivity_CCLE = ifelse( auc_CCLE < cutoff, "Sensitive", "Resistant")) 
+
+table("GDSC"=cellLinesSummary$sensitivity_GDSC, "CCLE"=cellLinesSummary$sensitivity_CCLE)
+```
+
+What proportion of the drug-cell line combinations are in agreement of sensitivity/resistance between the two studies?
+
+> Place your answer here
+
+Next, we'll create a scatterplot of the AUC values, colored by sensitivity. We'll start with just the drug "PLX4720".
+
+```{r, auc by sensitivity}
+cellLinesSummary <- cellLinesSummary %>% 
+              mutate(category = paste(sensitivity_GDSC, sensitivity_CCLE)) %>%
+              mutate(category = revalue(category, c("Resistant Resistant" = "Both Resistant",
+                                                    "Sensitive Sensitive" = "Both Sensitive",
+                                                    "Resistant Sensitive" = "GDSC Resistant / CCLE Sensitive",
+                                                    "Sensitive Resistant" = "GDSC Sensitive / CCLE Resistant")))
+table(cellLinesSummary$category)
+
+ggplot(aes(x=auc_GDSC, y=auc_CCLE, colour=category), data=subset(cellLinesSummary, drug=="PLX4720")) +
+    geom_point() + 
+    xlab("GDSC AUC") +
+    ylab("CCLE AUC") +
+    geom_hline(aes(yintercept=cutoff), colour="grey", alpha=0.75, lty=2) +
+    geom_vline(aes(xintercept=cutoff), colour="grey", alpha=0.75, lty=2) +
+    ggtitle("Drug PLX4720")
+```
+
+In this plot, which colors of points correspond to 'agreement' between the two studies? 
+
+> Place your answer here
+
+Overall, do most cell lines seem to agree or disagree in whether they were sensitive or resistant to PLX4720?
+
+> Place your answer here
+
+Next, we'll create the same scatterplot above, but for all drugs, so we can compare them side by side.
+
+```{r, sensitivity all drugs}
+ggplot(aes(x=auc_GDSC, y=auc_CCLE, colour=category), data=cellLinesSummary) +
+    geom_point(cex=0.5) + 
+    facet_wrap(facets=~drug) +
+    xlab("GDSC AUC") +
+    ylab("CCLE AUC") +
+    geom_hline(aes(yintercept=cutoff), colour="grey", alpha=0.75, lty=2) +
+    geom_vline(aes(xintercept=cutoff), colour="grey", alpha=0.75, lty=2) 
+```
+
+Now that we have explored these results visually, is there a way to summarize the agreement for each drug numerically? Right away we might think of calculating Pearson or Spearman correlation. However, these measures are intended to measure correlation between either continuous variables or variables with several unique values. Here we only have 2 categories: sensitive and resistant. So we'll turn to a correlation measure called Matthews correlation coefficient, which is designed to calculate the agreement based on binary (2-category) classifications.  
+
+Without getting into too much detail about the statistic, let's go ahead and see how it is calculated, and compare its values across all the drugs.
+
+```{r, matthews}
+# define a function to calculate matthews correlation coefficient (mcc)
+mcc <- function (study1, study2)
+{
+  BS <- sum(study1 == "Sensitive" & study2 == "Sensitive") 
+  BR <- sum(study1 == "Resistant" & study2 == "Resistant") 
+  SR <- sum(study1 == "Sensitive" & study2 == "Resistant") 
+  RS <- sum(study1 == "Resistant" & study2 == "Sensitive") 
+  
+  if (BS+SR == 0 | BS+RS == 0 | BR+SR == 0 |  BR+RS ==0){
+    mcc <- ((BS*BR)-(SR*RS)) 
+  }else{
+    mcc <- ((BS*BR)-(SR*RS)) / sqrt(exp((log(BS+SR)+log(BS+RS)+log(BR+SR)+log(BR+RS))))
+  }
+  return(mcc)
+}
+
+drugCorrs <- cellLinesSummary %>% 
+  group_by(drug) %>% 
+  summarise(matthews_corr=mcc(sensitivity_GDSC, sensitivity_CCLE))
+
+drugCorrs
+
+ggplot(data=drugCorrs, aes(x=drug, y=matthews_corr)) +
+  geom_bar(stat="identity") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  xlab("Drug")+
+  ylab("Matthews Correlation Coefficient")
+
+```
 
 Examining the Matthew's correlation values that take into account cell line categories, which drug do you think shows the most consistency between the studies? How about the least? 
 
 > Place your answer here
 
-Does this agree with your visual assessment and answers to these same questions in the previous vignette using continuous correlation measures (Pearson and Spearman)?
+Does this agree with your visual assessment and answers to these same questions in the previous tutorial (tutorial 2) using continuous correlation measures (Pearson and Spearman)?
 
 > Place your answer here
 
