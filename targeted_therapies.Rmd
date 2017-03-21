@@ -22,7 +22,7 @@ Andrew Goodspeed, et al. Mol Cancer Res, 2016.
 
 The CCLE and GDSC studies both investigated genomic profiles for all the cell lines that were used to study drug response. The genomic profiles collected included gene expression measurements for more than 10,000 genes in every cell line (measured by microarray) and mutation status for a subset of 64 genes in every cell line (measured by targeted sequencing). We will not have time to explore this data, but it is available through the R package `PharmacoGx` if you wish to explore it for a future project. 
 
-The main finding of Haibe-Kains et al. (2013) was that the genomic profiles of the cell lines used in both studies were highly correlated. What you have probably found so far in your explorations of comparing the summary measures of drug response is that the agreement between the studies does not seem highly reproducible. Part of this may be explained by differences in protocol (which you will have noticed in the different drug concentrations tested in the two studies). In the rest of this vignette, we'll investigate further sources of variation and biological mechanisms that might explain some of this lack of agreement.
+The main finding of Haibe-Kains et al. (2013) was that the genomic profiles of the cell lines used in both studies were highly correlated. What you might have found so far in your explorations of comparing the summary measures of drug response is that the agreement between the studies does not seem as highly reproducible. Part of this may be explained by differences in protocol (which you can see in the different drug concentrations tested in the two studies). In the rest of this vignette, we'll investigate further sources of variation and biological mechanisms that might explain some of this lack of agreement.
 
 ## Load the summarized pharmacological dataset into the session
 First, we'll read in the .csv file that contains the summarized pharmacological data (including the IC50 and AUC values for each drug and cell line combination, as described above). 
@@ -33,6 +33,40 @@ str(cellLinesSummary)
 ```
 
 ## Resistant versus Sensitive Cell lines
+
+Something that was not considered in the original comparison analyses by Haibe-Kains et al. was that different cell lines may more or less **resistant** (resistance means that the cell line does not respond to treatment by a drug) to drug treatment than others. Let's explore first why that might be an important factor, and then directly compare cell line sensitivity in the two studies. 
+
+Consider the following situation: say we have a set of cell lines that are resistant to a particular drug (they don't respond to it). Then we would expect that no matter what dose we give to the cell lines, their viability results would not change (they would stay near 100%). In this case, the AUC (area above the response curve) value would be near zero since the dose-response curve would look flat:
+
+![](Figures/resistant.jpg)
+
+What would the IC50 value be in this case? 
+
+> Place your answer here
+
+Assuming the results in both studies were consistent, then a scatterplot of the AUC values in this case would look like this (allowing for experimental error - we don't expect to get exactly 100% viability at each dose due to variations in the experimental conditions and cellular growth rates):
+
+```{r, AUC resistant}
+AUC_study1 <- rbeta(200, 1, 25)
+AUC_study2 <- rbeta(200, 1, 25)
+resistant <- data.frame(AUC_study1, AUC_study2)
+ggplot(resistant, aes( y=AUC_study2, x=AUC_study1) ) +
+    geom_point() + main("Simulated AUC of resistant cell lines")
+```
+
+Here we have simulated the AUC values in each study to be close to zero but with some random variability (this is done here using the Beta distribution). Do these AUC values look correlated? Calculate a correlation coefficient to quantify the correlation.
+
+> Place your answer here
+
+
+
+```{r, ic50 by cell line}
+ggplot(cellLinesSummary, aes( y=ic50_GDSC, x=drug, fill=study) ) +
+    geom_boxplot() +
+ #   facet_grid(study~.) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=.5)) +
+    ylim(0, 200)
+```
 
 TO DO: Lead through reproducing Figure 7 in F1000 paper. Implement 'cutoffs' to determine which cell lines are 'sensitive' or 'resistant' to each
 drug in each experiment using AUC. Use Matthews correlation to assess agreement of 0/1 classificaitons - simplest to compute by hand?
