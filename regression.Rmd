@@ -1,5 +1,5 @@
 ---
-title: Exploration of ways to summarize raw data
+title: Tutorial #4: Modeling the relation between two variables (drug concentration vs viability)
 output: html_document
 ---
 
@@ -7,40 +7,151 @@ output: html_document
 knitr::opts_chunk$set(cache=FALSE)
 ```
 
-IC50 and AUC statistics attempt to summarize response
-curves of viability upon drug concentration increases. 
-This vignette explores different regression approaches. 
+How can the relation between drug concentration and viability modelled
+in pharmacogenomic datasets? IC50 and AUC statistics are designed to
+summarize drug response curves into a single number. Apart from
+summarizing drug responses, these values have intuitive
+interpretations. For an overview about these statistics, please have a
+loot at the Tutorial #2 (Using Correlation Measures to Assess
+Replicability of Drug Response Studies).
 
-First let's write a function that plots the response 
-curves. 
+A limitation of this type of summarized statistics, however, is that we have
+to make assumptions about the data. As we will see in this vignette, some of
+these assumption might not always hold. When going through this vignette,
+try to think about the following question: Can the inconsistencies
+between the different studies be attributed to the modelling assumptions?
+
+* Exploring published IC50 with raw data
+
+In order to start exploring the IC50 and the AUC statistics that were
+published, let's load the data into the current working session and
+define a function that allows us to visualize the relation between
+drug response and drug concentration.
 
 ```{r plotResponse}
 rawFile <- "rawPharmacoData.csv"
+summarizedFile <- "summarizedPharmacoData.csv"
 if( !file.exists( rawFile ) ){
     source("downloadData.R")
 }
 pharmacoData <- read.csv(rawFile)
+summarizedData <- read.csv(summarizedFile)
 
 library(ggplot2)
 library(dplyr)
-plotResponse <- function(drugA, cellLineA){
-  pharSub <- filter(pharmacoData, drug==drugA, cellLine==cellLineA)
-  ggplot( pharSub, aes( log10(concentration), viability, col=study)) +
-    geom_point() + geom_line() + ylim(0, 150)
+library(cowplot)
+plotResponse <- function(drugA, cellLineA, addPublishedIC50=TRUE ){
+  pharSub <- filter( pharmacoData, drug==drugA, cellLine==cellLineA )
+  sumSub <- filter( summarizedData, drug==drugA, cellLine==cellLineA )
+  p <- ggplot( pharSub, aes( log10(concentration), viability, col=study)) +
+      geom_point(size=2.1) + geom_line(lwd=1.1) + ylim(0, 150)
+  if( addPublishedIC50 ){
+      p <- p + geom_vline( sumSub, xintercept=log10( sumSub[,"ic50_CCLE"] ), col="#d95f02", linetype="longdash") +
+          geom_vline( xintercept=log10( sumSub[,"ic50_GDSC"]), col="#1b9e77", linetype="longdash") +
+          geom_hline( yintercept=50, col="#00000050", linetype="longdash")
+  }
+  p <- p + scale_colour_manual( values = c("CCLE" = "#d95f02", "GDSC" = "#1b9e77" ))
+  xlims <- xlim( range(log10(c(pharSub$concentration, sumSub$ic50_CCLE, sumSub$ic50_GDSC ) ) ) )
+  p + xlims
 }
 ```
 
-Let's plot a "good" response curve. This has, more or less, the expected behavior. 
-Higher the drug concentrations lead to a decreased viability.
+The plot define above will visualize the viability scores as a function
+of the drug concentrations in each study. The vertical lines
+display the IC50 value published from each study. Let's start
+exploring how the response curve for the drug 17-AAG behaves in the
+cell-line H4.  Notice that this drug was reported to have consistent
+responses between the two studies.
 
 ```{r}
-pharmacoData$cellLine
-plotResponse( drugA="17-AAG", cellLineA="H4" )
+plotResponse( drugA="17-AAG", cellLineA="H4", TRUE )
 ```
 
-There are others, like 
+What observations can you draw from this curve? Is the response
+curve holding the assumptions to estimate an IC50 value?
+
+Let's now select another drug-cell line combination.
 
 ```{r}
-head()
-plotResponse( drugA="17-AAG", cellLineA="H4" )
+plotResponse( drugA="Nilotinib", cellLineA="22RV1" )
+```
+
+Are the reported IC50 values reflecting the actual behaviour
+of the response curves? How can IC50 values be estimated if
+there are no viabilities below 50%? How did the different studies
+addressed this issue?
+
+Can you estimate for how many drugs-cell line combinations you
+would expect a response curve that can be summarized into
+informative IC50 values?
+
+* Logistic regression
+
+A common way to model response curves is to fit a logistic
+regression model. This model should ideally describe how
+the drug response decreases upon increasing the drug concentration.
+
+Let's write a function that fits a logistic regression model on
+the data. The following function receives as input a drug name,
+a cell line name and a study name, and fits a regression model
+on the response data points.
+
+```{r}
+
+fitLogisticModel <- function(drugA, cellLineA, studyA){
+    pharSub <- filter( pharmacoData, drug==drugA, cellLine==cellLineA, study==studyA)
+    inRange <- pharSub$viability > 0 & pharSub$viability < 100
+    pharSub$viability <- round(pharSub$viability)
+    pharSub$concentration <- log10( pharSub$concentration )
+    maxVal <- pmax( pharSub$viability, 100 )
+    fit <- glm( cbind( viability, maxVal-viability ) ~ concentration,
+               pharSub, family=binomial )
+    fit
+}
+```
+
+Let's now fit the regression model to the examples
+mentioned above.
+		
+```{r}
+
+lrCCLE1 <- fitLogisticModel( "17-AAG", "H4", "CCLE" )
+lrGDSC1 <- fitLogisticModel( "17-AAG", "H4", "GDSC" )
+
+lrCCLE2 <- fitLogisticModel( "Nilotinib", "22RV1", "CCLE" )
+lrGDSC2 <- fitLogisticModel( "Nilotinib", "22RV1", "GDSC" )
+
+```
+
+Let's integrate our fit with the raw data. Ideally, we
+would like the regression model to be as close as possible
+to the individual data points.
+	
+```{r}
+
+predictValues <- function( fit ){
+    valuesToPredict <- seq(-3, 1, length.out=1000)
+    predicted <- predict( fit,
+            data.frame(concentration=valuesToPredict),
+            type="response" )
+    data.frame( concentration=valuesToPredict,
+               viability=predicted*100 )
+}
+plotFit <- function(p, fitCCLE, fitGDSC ){
+    p <- p + geom_line( aes( concentration, viability, study ),
+              data=predictValues( fitCCLE ), lwd=1.2,
+              linetype="dashed", col="#d95f02" )+
+    geom_line( aes( concentration, viability ),
+              data=predictValues( fitGDSC ), lwd=1.2,
+              linetype="dashed", col="#1b9e77")
+    p
+}
+
+plotFit( plotResponse( "17-AAG", "H4", FALSE ),
+        fitCCLE=lrCCLE1, fitGDSC=lrGDSC1 )
+
+plotFit( plotResponse( "Nilotinib", "22RV1", FALSE ),
+        fitCCLE=lrCCLE2, fitGDSC=lrGDSC2 ) +
+        xlim(-2, 1.3)
+
 ```
