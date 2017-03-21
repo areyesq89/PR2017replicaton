@@ -1,0 +1,46 @@
+---
+title: Exploration of ways to summarize raw data
+output: html_document
+---
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(cache=FALSE)
+```
+
+IC50 and AUC statistics attempt to summarize response
+curves of viability upon drug concentration increases. 
+This vignette explores different regression approaches. 
+
+First let's write a function that plots the response 
+curves. 
+
+```{r plotResponse}
+rawFile <- "rawPharmacoData.csv"
+if( !file.exists( rawFile ) ){
+    source("downloadData.R")
+}
+pharmacoData <- read.csv(rawFile)
+
+library(ggplot2)
+library(dplyr)
+plotResponse <- function(drugA, cellLineA){
+  pharSub <- filter(pharmacoData, drug==drugA, cellLine==cellLineA)
+  ggplot( pharSub, aes( log10(concentration), viability, col=study)) +
+    geom_point() + geom_line() + ylim(0, 150)
+}
+```
+
+Let's plot a "good" response curve. This has, more or less, the expected behavior. 
+Higher the drug concentrations lead to a decreased viability.
+
+```{r}
+pharmacoData$cellLine
+plotResponse( drugA="17-AAG", cellLineA="H4" )
+```
+
+There are others, like 
+
+```{r}
+head()
+plotResponse( drugA="17-AAG", cellLineA="H4" )
+```
