@@ -2,8 +2,13 @@
 
 Clone or download this repository to your computer and open the `.Rmd` files in Rstudio.
 
+## Main Analysis Template R Markdown:
+
+* `analysis_template.Rmd` : R markdown template which each team will use to create a fully reproducible analysis with the goal of assessing and interpreting the replicability of two pharmacogenomic experiments. This document will contain all of the text and code of their analyses, which are quided by a series of questions. The tools and concepts needed to answer the questions are explored in the tutorials.
+
 ## Tutorials:
 Each tutorial contains text and code that explores various aspects of replicability and reproducibility. Throughout each tutorial there are questions to fill in, some require written answers and some require code to produce a plot or numerical summary.
+
 * `exploration.Rmd` : R markdown tutorial 1 - "What to do when you first get data"
 
 * `pharmaco_correlation.Rmd` : R markdown tutorial 2 - "Evaluating replicability of large pharmacological studies"
