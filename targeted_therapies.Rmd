@@ -128,8 +128,8 @@ Let's go ahead and add sensitivity variables to our dataset, and explore their b
 ```{r, create sensitivity}
 cellLinesSummary <- cellLinesSummary %>% 
               mutate(cutoff = ifelse(drug=="paclitaxel", 0.4, 0.2)) %>%
-              mutate(sensitivity_GDSC = ifelse( auc_GDSC < cutoff, "Sensitive", "Resistant"), 
-                     sensitivity_CCLE = ifelse( auc_CCLE < cutoff, "Sensitive", "Resistant")) 
+              mutate(sensitivity_GDSC = factor(ifelse( auc_GDSC < cutoff, "Sensitive", "Resistant")), 
+                     sensitivity_CCLE = factor(ifelse( auc_CCLE < cutoff, "Sensitive", "Resistant"))) 
 
 table("GDSC"=cellLinesSummary$sensitivity_GDSC, "CCLE"=cellLinesSummary$sensitivity_CCLE)
 ```
@@ -178,12 +178,11 @@ ggplot(aes(x=auc_GDSC, y=auc_CCLE, colour=category), data=cellLinesSummary) +
     geom_vline(aes(xintercept=cutoff), colour="grey", alpha=0.75, lty=2) 
 ```
 
-Now that we have explored these results visually, is there a way to summarize the agreement for each drug numerically? Right away we might think of calculating Pearson or Spearman correlation. However, these measures are intended to measure correlation between either continuous variables or variables with several unique values. Here we only have 2 categories: sensitive and resistant. So we'll turn to a correlation measure called Matthews correlation coefficient, which is designed to calculate the agreement based on binary (2-category) classifications.  
+Now that we have explored these results visually, is there a way to summarize the agreement for each drug numerically? Right away we might think of calculating Pearson or Spearman correlation. However, these measures are intended to measure correlation between either continuous variables or variables with several unique values. Here we only have 2 categories: sensitive and resistant. So we'll turn to a correlation measure called Matthews correlation coefficient (MCC), which is designed to calculate the agreement based on binary (2-category) classifications.  
 
-Without getting into too much detail about the statistic, let's go ahead and see how it is calculated, and compare its values across all the drugs.
+Without getting into too much detail about the statistic, let's go ahead and see how it is calculated, and compare its values across all the drugs. We'll first have to load the `PharmacoGX` package which contains the `mcc` function to calculate the MCC. Note that if you don't have this package installed on your system, you can first install it using the Bioconductor commands below.
 
 ```{r, matthews}
-# define a function to calculate matthews correlation coefficient (mcc)
 mcc <- function (study1, study2)
 {
   BS <- sum(study1 == "Sensitive" & study2 == "Sensitive") 
@@ -223,7 +222,32 @@ Does this agree with your visual assessment and answers to these same questions 
 
 ## Targeted versus Broad Effect Drugs
 
-TO DO: Lead through interpretation of above figure in the context of different drug classes: targeted (drugs that are specific to a certain type of cell, possibly due to a specific mutation or expression signature) vs broadly cytotoxic vs no effect.  These categories are listed on page 9 of the f1000 paper. The consideration of this factor is important because "measured response in insensitive cell lines may represent random technical noise that one should not expect to be correlated between experiments"
+In addition to sensitivity of cell lines, another biological factor that might have major implications for the perceived replicability of studies is the **targeted** nature of the drugs used. A drug is considered **targeted** if it is expected to have selective activity against some cell lines. The mechanism of impact on perceived replicability is very similar to the impact of sensitivity of cell lines: the response in the cell lines that the drug does *not* target may represent random noise (and we don't expect to observe correlations in random noise). For this reason, some of the followup articles indicated that drugs should be considered separately based on their targeted nature. 
+
+Safikhani et al. describe the following three classes of drugs based on observed responses of the cell lines:
+
+* **No effect**: minimal observed resposne for all cell lines
+    + sorafenib
+    + erlotinib
+    + PHA-665752
+* **Narrow effect**: response in only a small subset of cell lines
+    + nilotinib
+    + lapatinib
+    + nutlin-3
+    + PLX44720
+    + crizotinib
+    + PD-0332991
+    + AZD0530
+    + TAE684
+* **Broad effect**: response in a large number of cell lines
+    + AZD6244
+    + PD-0325901
+    + 17-AAG
+    + paclitaxel
+
+Consider, for example, the drugs sorafenib and nilotinib. In the context of these drug classes, which would you expect to have a larger MCC and why? Are the observed MCC values consistent with this? 
+
+> Place your answer here
 
 For one of the targeted drugs, examine the cell lines that were sensitive in both the CCLE and GDSC. See if you can find out what types of cells these are by searching the online Cancer Cell Line Encyclopedia http://www.broadinstitute.org/ccle. This will prompt you to register with a username, password, and email address. If you prefer, you can also search the cell line on various other websites. Based on what you find, are there specific cancer types that this drug might be effective against?
 
@@ -233,7 +257,7 @@ For one of the targeted drugs, examine the cell lines that were sensitive in bot
 
 Here are some suggestions and questions for you to explore with your team:
 
-1. Are there any cell lines that seem to be either (1) consistently sensitive or (2) consistently resistant? What effect might this have on your conclusions and interpretations of the agreement between the studies?
+1. Are there any cell lines that seem to be either (1) consistently sensitive or (2) consistently resistant? What effect might this have on your conclusions and interpretations of the agreement between the studies? For example, do you observe any increase in replicability (as measured by correlation of drug response) if you exclude the most resistant cell lines?
 
 2. The above investigation using Matthew's correlation on the sensitive versus resistant classifications of the cell lines was based on AUC values. How does the analysis change when using IC50 values instead? Note that you'll have to use a different cutoff than the 0.2 used for the AUC since IC50 values are on a much different scale. Justify your choice of cutoff.
 
