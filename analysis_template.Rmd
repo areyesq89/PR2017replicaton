@@ -44,9 +44,9 @@ You may find it helpful to use the version control and code sharing system calle
 7. We have explored Pearson and Spearman correlation, but what about other correlation measures? For example, you could try out distance correlation, which is sensitive to nonlinear relationships. You can find this measure in the `energy` R package, which you'll need to install and load with the following commands:
 
     ```{r, eval=FALSE}
-install.packages("energy")
-load(energy)
-```
+    install.packages("energy")
+    load(energy)
+    ```
 
     Then, you can compute distance correlation with the `dcor()` function. How does this correlation measure compare to Pearson and Spearman? Do your conclusions about the agreement between the two studies change at all using this measure?
 
