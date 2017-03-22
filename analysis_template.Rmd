@@ -1,0 +1,76 @@
+---
+title: "Insert your team name here"
+output: html_document
+date: Replicathon 2017
+author: Team members names
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Instructions:
+
+In this R Markdown document, you and your team will create a fully reproducible analysis with the goal of assessing and interpreting the replicability of two pharmacogenomic experiments. This document should contain all of the text and code of your analyses, which will allow others to run, interpret, and reuse your work.
+
+The questions below will help guide you in your analyses and interpretation of results. You don't need to answer every question, but for the problems you do complete, make sure that you completely justify your conclusions by explaining your reasoning and including numerical summaries and data visualizations wherever possible. There are four tutorials (also R Markdown documents) that will help you learn new tools to tackle these problems, and the questions are divided into four sections corresponding to the tutorials (though many overlap with more than one tutorial). If questions arise during your analyses that do not fit into these problems, feel free to include those as well. 
+
+For each answer, include text by simply typing below the question. Include code in code blocks (include three back ticks at the start and end of each code block):
+
+```{r}
+#Your code goes here
+```
+
+You may find it helpful to use the version control and code sharing system called GitHub to work together with your team so that all of you can edit the same document and keep track of its changes. Here is a [setup guide](https://github.com/datasciencelabs/2016/blob/master/lectures/git-and-github/setting-up-git.Rmd) and [brief introduction to Git and GitHub](https://github.com/datasciencelabs/2016/blob/master/lectures/git-and-github/version-control.Rmd) from another course. The mentors will be able to help if you run into problems. 
+
+## Questions:
+
+### Exploratory analysis of pharmacogenomic data
+
+### Using Correlation Measures to Assess Replicability of Drug Response Studies
+
+1. Create a scatterplot for each drug comparing the AUC in GDSC and CCLE for all cell lines.
+
+2. Calculate correlation coefficients of the AUC in GDSC and CCLE for each drug. 
+
+3. Based on the scatterplot and correlation values, would you say that they tend to agree? Why or why not?
+
+4. Does the AUC or IC50 suggest more agreement between the studies? 
+
+5. Which drug do you think shows the most consistency between the studies? How about the least? 
+
+6. If you calculated more than one type of correlation coefficient (for example Pearson and Spearman), how do they differ? Which do you think is a better summary of the conistency between the two studies? 
+
+7. We have explored Pearson and Spearman correlation, but what about other correlation measures? For example, you could try out distance correlation, which is sensitive to nonlinear relationships. You can find this measure in the `energy` R package, which you'll need to install and load with the following commands:
+
+    ```{r, eval=FALSE}
+install.packages("energy")
+load(energy)
+```
+
+    Then, you can compute distance correlation with the `dcor()` function. How does this correlation measure compare to Pearson and Spearman? Do your conclusions about the agreement between the two studies change at all using this measure?
+
+### Identifying biological factors that influence replicability of pharmacogenomic studies
+
+1. Are there any cell lines that seem to be consistently sensitive? (Hint: look for the 5 cell lines which seem the most resistant in both studies according to the average drug response by AUC) What effect might this have on your conclusions and interpretations of the agreement between the studies? For example, do you observe any increase in replicability (as measured by correlation of drug response) if you exclude the most resistant cell lines?
+
+2. Classify each cell line as resistant to a drug if its AUC is below 0.25, and sensitive if it 0.25 or higher (except for the broadly cytotoxic drug paclitaxel - use a cutoff of 0.4). Compare the resistance status of cell lines in GDSC and CCLE for each drug using either a scatterplot of AUC values colored by resistance/sensitivity in each study or a table.
+
+3. Compute the Matthews correlation coefficient for sensitivity status of cell lines in GDSC and CCLE for each drug. 
+
+4. Are there any drugs for which most or all cell lines seem to be resistant in both studies? If so, what are the correlation values for these drugs? What do these results imply about the replicability of these studies?
+
+5. Compare the Matthews correlation coefficient values by drug classes defined in Tutorial 3 (No effect, Narrow effect, Broad effect). Which drug class shows the most agreement between the studies? 
+
+6. Would you say that the sensitivity results for the two studies tend to agree?
+
+7. For one of the targeted drugs, examine the cell lines that were sensitive in both the CCLE and GDSC. See if you can find out what types of cells these are by searching the online Cancer Cell Line Encyclopedia http://www.broadinstitute.org/ccle. This will prompt you to register with a username, password, and email address. If you prefer, you can also search the cell line on various other websites. Based on what you find, are there specific cancer types that this drug might be effective against?
+
+8. Pick another one of the targeted drugs. See if you can find out what types of cancers this drug is targeted for using the NCI cancer drug database at https://www.cancer.gov/about-cancer/treatment/drugs. Does the list of cell lines found to be sensitive in both studies agree with this (it may be helpful to look them up at http://www.broadinstitute.org/ccle)?
+
+### Modeling the relation between two variables (drug concentration vs viability)
+
+## Discussion:
+
+Summarize the main findings of your analyses in the previous four sections here. 
+
