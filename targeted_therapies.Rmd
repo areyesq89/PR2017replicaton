@@ -40,7 +40,7 @@ Consider the following situation: say we have a set of cell lines that are resis
 
 ![](Figures/resistant.jpg)
 
-What would the IC50 value be in this case? 
+How would you calculate the IC50 value in this case? 
 
 > Place your answer here
 
@@ -99,9 +99,6 @@ ggplot(drugAvg, aes(x=mean_ic50_GDSC, y=mean_ic50_CCLE)) +
     ggtitle("Average IC50 value by cell line (averaged over drugs)")
 ```
 
-Find 5 cell lines which seem the most resistant in both studies according to the average IC50.
-
-> Place your answer here
 
 ```{r, auc by cell line}
 ggplot(drugAvg, aes(x=mean_auc_GDSC, y=mean_auc_CCLE)) +
@@ -109,11 +106,7 @@ ggplot(drugAvg, aes(x=mean_auc_GDSC, y=mean_auc_CCLE)) +
     ggtitle("Average AUC value by cell line (averaged over drugs)")
 ```
 
-Find 5 cell lines which seem the most resistant in both studies according to the average AUC.
-
-> Place your answer here
-
-Are the answers above consistent for both IC50 and AUC?
+What is the most sensitive cell line?
 
 > Place your answer here
 
@@ -128,8 +121,8 @@ Let's go ahead and add sensitivity variables to our dataset, and explore their b
 ```{r, create sensitivity}
 cellLinesSummary <- cellLinesSummary %>% 
               mutate(cutoff = ifelse(drug=="paclitaxel", 0.4, 0.2)) %>%
-              mutate(sensitivity_GDSC = factor(ifelse( auc_GDSC < cutoff, "Sensitive", "Resistant")), 
-                     sensitivity_CCLE = factor(ifelse( auc_CCLE < cutoff, "Sensitive", "Resistant"))) 
+              mutate(sensitivity_GDSC = factor(ifelse( auc_GDSC < cutoff, "Resistant", "Sensitive")), 
+                     sensitivity_CCLE = factor(ifelse( auc_CCLE < cutoff, "Resistant", "Sensitive"))) 
 
 table("GDSC"=cellLinesSummary$sensitivity_GDSC, "CCLE"=cellLinesSummary$sensitivity_CCLE)
 ```
@@ -180,7 +173,7 @@ ggplot(aes(x=auc_GDSC, y=auc_CCLE, colour=category), data=cellLinesSummary) +
 
 Now that we have explored these results visually, is there a way to summarize the agreement for each drug numerically? Right away we might think of calculating Pearson or Spearman correlation. However, these measures are intended to measure correlation between either continuous variables or variables with several unique values. Here we only have 2 categories: sensitive and resistant. So we'll turn to a correlation measure called Matthews correlation coefficient (MCC), which is designed to calculate the agreement based on binary (2-category) classifications.  
 
-Without getting into too much detail about the statistic, let's go ahead and see how it is calculated, and compare its values across all the drugs. We'll first have to load the `PharmacoGX` package which contains the `mcc` function to calculate the MCC. Note that if you don't have this package installed on your system, you can first install it using the Bioconductor commands below.
+Without getting into too much detail about the statistic, let's go ahead and see how it is calculated, and compare its values across all the drugs. 
 
 ```{r, matthews}
 mcc <- function (study1, study2)
@@ -248,18 +241,3 @@ Safikhani et al. describe the following three classes of drugs based on observed
 Consider, for example, the drugs sorafenib and nilotinib. In the context of these drug classes, which would you expect to have a larger MCC and why? Are the observed MCC values consistent with this? 
 
 > Place your answer here
-
-For one of the targeted drugs, examine the cell lines that were sensitive in both the CCLE and GDSC. See if you can find out what types of cells these are by searching the online Cancer Cell Line Encyclopedia http://www.broadinstitute.org/ccle. This will prompt you to register with a username, password, and email address. If you prefer, you can also search the cell line on various other websites. Based on what you find, are there specific cancer types that this drug might be effective against?
-
-> Place your answer here
-
-## Further Exploration
-
-Here are some suggestions and questions for you to explore with your team:
-
-1. Are there any cell lines that seem to be either (1) consistently sensitive or (2) consistently resistant? What effect might this have on your conclusions and interpretations of the agreement between the studies? For example, do you observe any increase in replicability (as measured by correlation of drug response) if you exclude the most resistant cell lines?
-
-2. The above investigation using Matthew's correlation on the sensitive versus resistant classifications of the cell lines was based on AUC values. How does the analysis change when using IC50 values instead? Note that you'll have to use a different cutoff than the 0.2 used for the AUC since IC50 values are on a much different scale. Justify your choice of cutoff.
-
-3. Pick another one of the targeted drugs. See if you can find out what types of cancers this drug is targeted for using the NCI cancer drug database at https://www.cancer.gov/about-cancer/treatment/drugs. Does the list of cell lines found to be sensitive in both studies agree with this (it may be helpful to look them up at http://www.broadinstitute.org/ccle)?
-
