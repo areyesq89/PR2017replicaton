@@ -66,7 +66,7 @@ ggplot(aes(x=auc_GDSC, y=auc_CCLE), data=subset(cellLinesSummary, drug=="AZD0530
     ylab("CCLE AUC") 
 ```
 
-How would you describe the level of agreement between the AUC values of drug AZD0530 in the CCLE and GDSC studies? Does it seem like higher values of AUC in the GDSC correspond to higher values in the CCLE?
+Perfect agreement between the GDSC and CCLE AUC values would mean all the points would fall on a straight line. How would you describe the level of agreement between the AUC values of drug AZD0530 in the CCLE and GDSC studies? Does it seem like higher values of AUC in the GDSC correspond to higher values in the CCLE?
 
 > Place your answer here
 
@@ -161,13 +161,94 @@ One way to quantify the degree of agreement of two variables is to calculate the
 
 > Place your answer here
 
+When interpreting a correlation value, we consider how close the value is to 1 (or negative 1). There are no exact rules on calling a correlation "weak" or "strong", but generally values above around 0.7 in magnitude are considered strong and below around 0.3 in magnitude are considered weak. Here are some example scatterplots and their resulting correlation coefficients (using the Pearson method to calculate - more on this below). 
+
+```{r, correlation ex}
+# set seed for reproducibility
+set.seed(738)
+
+# Perfect correlation
+x <- rnorm(50)
+perfect <- data.frame(x=x, y=x)
+cor.coef <- round(cor(perfect$x, perfect$y),2)
+ggplot(data=perfect, aes(x=x,y=y)) +
+  geom_point() +
+  ggtitle(paste0("Correlation coefficient = ", cor.coef)) + 
+  geom_smooth(method='lm', se=FALSE)
+
+# Strong correlation
+x <- rnorm(50,0,2)
+strong <- data.frame(x=x, y=x+rnorm(50,0,0.75))
+cor.coef <- round(cor(strong$x, strong$y),2)
+ggplot(data=strong, aes(x=x,y=y)) +
+  geom_point() +
+  ggtitle(paste0("Correlation coefficient = ", cor.coef))+ 
+  geom_smooth(method='lm', se=FALSE)
+
+# Moderate correlation
+x <- rnorm(50,0,2)
+moderate <- data.frame(x=x, y=x+rnorm(50,0,2.5))
+cor.coef <- round(cor(moderate$x, moderate$y),2)
+ggplot(data=moderate, aes(x=x,y=y)) +
+  geom_point() +
+  ggtitle(paste0("Correlation coefficient = ", cor.coef))+ 
+  geom_smooth(method='lm', se=FALSE)
+
+# Weak correlation
+x <- rnorm(50,0,1)
+weak <- data.frame(x=x, y=x+rnorm(50,0,4))
+cor.coef <- round(cor(weak$x, weak$y),2)
+ggplot(data=weak, aes(x=x,y=y)) +
+  geom_point() +
+  ggtitle(paste0("Correlation coefficient = ", cor.coef))+ 
+  geom_smooth(method='lm', se=FALSE)
+
+# No correlation
+x <- rnorm(50,0,2)
+none <- data.frame(x=x, y=rnorm(50),0,2)
+cor.coef <- round(cor(none$x, none$y),2)
+ggplot(data=none, aes(x=x,y=y)) +
+  geom_point() +
+  ggtitle(paste0("Correlation coefficient = ", cor.coef))+ 
+  geom_smooth(method='lm', se=FALSE)
+
+```
+
 Note that there are several different types of correlations. For example, we might say that two variables are in agreement if they fall along a straight line when plotted against eachother. Or, we might say they two are in agreement if an increase in one tends to be associated with an increase in the other (but not necessarily along a straight line). We'll start by examining two different types:
 
 1. **Pearson's** correlation coefficient: measures the degree of *linear* association 
 
 2. **Spearman's** correlation coefficient: measures the agreement of the *rankings* of the values of one variable compared to the other.
 
-Here we'll summarize different measures of correlation of the IC50 values and the AUC values to assess the level of 
+To understand the difference, here is an example where the two correlation measures are similar, and an example where they differ substantially.
+
+```{r, spearman vs pearson}
+# Same
+x <- rnorm(50,0,1)
+corrcomp <- data.frame(x=x, y=x+rnorm(50,0,1))
+cor.pearson <- round(cor(corrcomp$x, corrcomp$y, method="pearson"),2)
+cor.spearman <- round(cor(corrcomp$x, corrcomp$y, method="spearman"),2)
+ggplot(data=corrcomp, aes(x=x,y=y)) +
+  geom_point() +
+  ggtitle(paste0("Pearson = ", cor.pearson, ", Spearman = ", cor.spearman))+ 
+  geom_smooth(method='lm', se=FALSE)
+
+# Different
+x <- rnorm(50,0,2)
+corrcomp <- data.frame(x=x, y=exp(x))
+cor.pearson <- round(cor(corrcomp$x, corrcomp$y, method="pearson"),2)
+cor.spearman <- round(cor(corrcomp$x, corrcomp$y, method="spearman"),2)
+ggplot(data=corrcomp, aes(x=x,y=y)) +
+  geom_point() +
+  ggtitle(paste0("Pearson = ", cor.pearson, ", Spearman = ", cor.spearman))
+
+```
+
+In the previous example, why is the Spearman correlation so high, while the Pearson correlation is only moderate?
+
+> Place your answer here
+
+Now we'll summarize different measures of correlation of the IC50 values and the AUC values to assess the level of 
 replication between these two experiments. First, we'll compute the two different measures for correlating 
 continous variables mentioned above (Pearson and Spearman correlation coefficients).
 
