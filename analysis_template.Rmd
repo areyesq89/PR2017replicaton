@@ -27,6 +27,8 @@ You may find it helpful to use the version control and code sharing system calle
 
 ### Exploratory analysis of pharmacogenomic data
 
+
+
 ### Using Correlation Measures to Assess Replicability of Drug Response Studies
 
 1. Create a scatterplot for each drug comparing the AUC in GDSC and CCLE for all cell lines.
@@ -69,6 +71,17 @@ You may find it helpful to use the version control and code sharing system calle
 8. Pick another one of the targeted drugs. See if you can find out what types of cancers this drug is targeted for using the NCI cancer drug database at https://www.cancer.gov/about-cancer/treatment/drugs. Does the list of cell lines found to be sensitive in both studies agree with this (it may be helpful to look them up at http://www.broadinstitute.org/ccle)?
 
 ### Modeling the relation between two variables (drug concentration vs viability)
+
+1. Explore the response curves for several drug-cell line combinations. How many drugs-cell line combinations contain viability response values that would potentially enable them to be summarized into an IC50 value? You can answer this, for example, by checking whether there are viability values below 50%.
+
+2. Analyze the re-calculations of IC50 and AUCs from the drug 17-AAG in the H4 cell-line and the drug Nilotinib cell-line in the 22RV1 cell-line. See the figure below and asnwer: which statistic is more roboust, IC50 or AUC? Which statistic is more generalizable, IC50 or AUC? Justify your answer with examples and/or using the whole data recalculations from the *mySummarizedData* variable.
+
+<img src="Figures/reproducible.png" width="400px" height="200px" />
+Modified from [Kirstie Whitaker](https://github.com/KirstieJane/).
+
+3. Are the results more replicable if one uses the same code to calculate IC50 or AUC on the different datasets? Hint: you can use code from tutorial #3 to evaluate this.
+
+4. Summarize the viability curves of all the drugs in each cell-line using the slope of linear model. Is the slope of the linear regression informative of the drug response? Can we improve the replicability of the studies by using the value of the slope instead of IC50s or AUCs? 
 
 ## Discussion:
 
