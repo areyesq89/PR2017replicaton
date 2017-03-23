@@ -66,9 +66,7 @@ You may find it helpful to use the version control and code sharing system calle
 
 6. Would you say that the sensitivity results for the two studies tend to agree?
 
-7. For one of the targeted drugs, examine the cell lines that were sensitive in both the CCLE and GDSC. See if you can find out what types of cells these are by searching the online Cancer Cell Line Encyclopedia http://www.broadinstitute.org/ccle. This will prompt you to register with a username, password, and email address. If you prefer, you can also search the cell line on various other websites. Based on what you find, are there specific cancer types that this drug might be effective against?
-
-8. Pick another one of the targeted drugs. See if you can find out what types of cancers this drug is targeted for using the NCI cancer drug database at https://www.cancer.gov/about-cancer/treatment/drugs. Does the list of cell lines found to be sensitive in both studies agree with this (it may be helpful to look them up at http://www.broadinstitute.org/ccle)?
+7. For one of the targeted drugs, examine the cell lines that were sensitive ih the CCLE and/or GDSC. See if you can find out what types of cells these are by searching the online Cancer Cell Line Encyclopedia http://www.broadinstitute.org/ccle (this will prompt you to register with a username, password, and email address. If you prefer, you can also search the cell line on other websites). See if you can find out what types of cancers this drug is targeted for using the NCI cancer drug database at https://www.cancer.gov/about-cancer/treatment/drugs. Does the list of cell lines found to be sensitive in the two studies agree with this?
 
 ### Modeling the relation between two variables (drug concentration vs viability)
 
