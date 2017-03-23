@@ -315,12 +315,7 @@ avg( 1:5 )
 
 Material in this tutorial was adapted from Rafael Irizarry's _Introduction to Data Science_ course. 
 
-A good place to start learning more about R for those with limited programming is to complete one of the following R programming courses:
-
-* DataCamp's [R course](https://www.datacamp.com/courses/free-introduction-to-r)
-* edX's [Introduction to R Programming](https://www.edx.org/course/introduction-r-programming-microsoft-dat204x-0)
-
-Another great tutorial is the [swirl](http://swirlstats.com/) tutorial, which teaches you R programming interactively, at your own pace and in the R console. Once you have R installed, you can install `swirl` and run it the following way: 
+If you want to learn more about R after this event, a great place to start is with the [swirl](http://swirlstats.com/) tutorial, which teaches you R programming interactively, at your own pace and in the R console. Once you have R installed, you can install `swirl` and run it the following way: 
 
 ```{r, eval=FALSE}
 install.packages("swirl")
@@ -328,29 +323,11 @@ library(swirl)
 swirl()
 ```
 
-[try R](http://tryr.codeschool.com/) interactive class from Code School. 
-
 There are also many open and free resources and reference
 guides for R. Two examples are:
 
 * [Quick-R](http://www.statmethods.net/): a quick online reference for data input, basic statistics and plots
 * R reference card (PDF)[https://cran.r-project.org/doc/contrib/Short-refcard.pdf] by Tom Short 
-
-#### More advanced R Resources (from Roger Peng)
-
-Available from CRAN (http://cran.r-project.org)
-
--   An Introduction to R
-
--   Writing R Extensions
-
--   R Data Import/Export
-
--   R Installation and Administration (mostly for building R from
-    sources)
-
--   R Internals (not for the faint of heart)
-
 
 #### Some Useful Books on S/R
 
