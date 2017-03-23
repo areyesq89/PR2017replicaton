@@ -27,7 +27,30 @@ You may find it helpful to use the version control and code sharing system calle
 
 ### Exploratory analysis of pharmacogenomic data
 
+1. How many cell-lines are contained in the data?
 
+2. What drug concentrations were used in each study?
+
+3. Histograms, appart from telling how is the data
+distributed, can also make evident potential
+problems with the data. Plot a histogram
+of drug viabilities. Does it look as one would
+expect from the description of the data?
+
+4. How many viability data points are within the
+expected range according to the definition of viability (e.g. above 0 
+and below 100)? Try to come up with explanations about
+the values that are out of range. Are these due to technical
+issues? Biology?
+
+5. Read the csv file containing the summarized data files. What kind
+of variables are in the data? What does each column represents?
+
+6. Plot a histogram of the viability scores as a function of the drug
+doses. Are stronger drug concentrations consistent with lower viability scores?
+
+6. Are there cell-lines that are overall more susceptible to drug exposure?
+(Hint: you can use boxplot to evaluate this)
 
 ### Using Correlation Measures to Assess Replicability of Drug Response Studies
 
