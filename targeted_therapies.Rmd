@@ -114,13 +114,13 @@ What is the most sensitive cell line?
 
 So far we've seen that the sensitivity of cell lines can have major implications for the perceived replicability of studies if we use standard correlation measures for assessment. For this reason, some of the followup articles indicated that sensitivity should be taken into account in this kind of analysis. How can we consider sensitivity when assessing replicability of the two studies? One idea is to assess the agreement between the studies on which cell lines were sensitive or resistant (instead of agreement on the actual values of AUC or IC50).  
 
-To assess agreement between the studies on which cell lines were sensitive or resistant, we first have to define criteria for deciding whether a cell line is resistant or not. In other words, we'd like to choose an AUC cutoff that divides sensitive and resistant responses. This choice is somewhat arbitrary, but for now we'll choose the values used by the Safikhani et al. paper that explored this concept: AUC values 0.2 or higher indicate that the cell line is sensitive to the drug, and AUC values below 0.2 indicate that the cell line is resistant (unless no cell lines had observed AUC values above 0.2 in either study, then use 0.4. This is the case for the broadly cytotoxic drug paclitaxel). 
+To assess agreement between the studies on which cell lines were sensitive or resistant, we first have to define criteria for deciding whether a cell line is resistant or not. In other words, we'd like to choose an AUC cutoff that divides sensitive and resistant responses. This choice is somewhat arbitrary, we'll start by choosing the following cutoffs: AUC values 0.1 or higher indicate that the cell line is sensitive to the drug, and AUC values below 0.1 indicate that the cell line is resistant (unless no cell lines had observed AUC values above 0.1 in either study, then use 0.4. This is the case for the broadly cytotoxic drug paclitaxel). You are encouraged to try other cutoffs as well.
 
 Let's go ahead and add sensitivity variables to our dataset, and explore their basic properties.
 
 ```{r, create sensitivity}
 cellLinesSummary <- cellLinesSummary %>% 
-              mutate(cutoff = ifelse(drug=="paclitaxel", 0.4, 0.2)) %>%
+              mutate(cutoff = ifelse(drug=="paclitaxel", 0.4, 0.1)) %>%
               mutate(sensitivity_GDSC = factor(ifelse( auc_GDSC < cutoff, "Resistant", "Sensitive")), 
                      sensitivity_CCLE = factor(ifelse( auc_CCLE < cutoff, "Resistant", "Sensitive"))) 
 

@@ -54,9 +54,9 @@ doses. Are stronger drug concentrations consistent with lower viability scores?
 
 ### Using Correlation Measures to Assess Replicability of Drug Response Studies
 
-1. Create a scatterplot for each drug comparing the AUC in GDSC and CCLE for all cell lines.
+1. Create a scatterplot for each drug comparing the AUC in GDSC and CCLE for all cell lines (hint: code from Tutorial 2 may help).
 
-2. Calculate correlation coefficients of the AUC in GDSC and CCLE for each drug. 
+2. Calculate correlation coefficients of the AUC in GDSC and CCLE for each drug (hint: code from Tutorial 2 may help). 
 
 3. Based on the scatterplot and correlation values, would you say that they tend to agree? Why or why not?
 
@@ -77,13 +77,13 @@ doses. Are stronger drug concentrations consistent with lower viability scores?
 
 ### Identifying biological factors that influence replicability of pharmacogenomic studies
 
-1. Are there any cell lines that seem to be consistently sensitive? (Hint: look for the 5 cell lines which seem the most resistant in both studies according to the average drug response by AUC) What effect might this have on your conclusions and interpretations of the agreement between the studies? For example, do you observe any increase in replicability (as measured by correlation of drug response) if you exclude the most resistant cell lines?
+1. Are there any cell lines that seem to be consistently sensitive? (Hint: look for the 5 cell lines which seem the most resistant in both studies according to the average drug response by AUC; code from Tutorial 3 may help) What effect might this have on your conclusions and interpretations of the agreement between the studies? For example, do you observe any increase in replicability (as measured by correlation of drug response) if you exclude the most resistant cell lines?
 
-2. Classify each cell line as resistant to a drug if its AUC is below 0.25, and sensitive if it 0.25 or higher (except for the broadly cytotoxic drug paclitaxel - use a cutoff of 0.4). Compare the resistance status of cell lines in GDSC and CCLE for each drug using either a scatterplot of AUC values colored by resistance/sensitivity in each study or a table.
+2. Classify each cell line as resistant or sensitive to a drug based on its AUC value (Hint: choose a cutoff for which cell lines with AUC below the cutoff are considered sensitive and explain your choice of cutoff(s); code from Tutorial 3 may help). Compare the resistance status of cell lines in GDSC and CCLE for each drug using either a scatterplot of AUC values colored by resistance/sensitivity in each study or a table.
 
-3. Compute the Matthews correlation coefficient for sensitivity status of cell lines in GDSC and CCLE for each drug. 
+3. Compute the Matthews correlation coefficient for sensitivity status (from #2) of cell lines in GDSC and CCLE for each drug (Hint: code from Tutorial 3 may help). 
 
-4. Are there any drugs for which most or all cell lines seem to be resistant in both studies? If so, what are the correlation values for these drugs? What do these results imply about the replicability of these studies?
+4. Are there any drugs for which most or all cell lines seem to be resistant in both studies (Hint: for each cell line, look at its average response across all drugs; code from Tutorial 3 may help)? If so, what are the correlation values for these drugs? What do these results imply about the replicability of these studies?
 
 5. Compare the Matthews correlation coefficient values by drug classes defined in Tutorial 3 (No effect, Narrow effect, Broad effect). Which drug class shows the most agreement between the studies? 
 
