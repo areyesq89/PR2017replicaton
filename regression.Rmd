@@ -83,7 +83,7 @@ How did the two different studies deal with these cases?
 ## Logistic regression
 
 A common way to model viability response curves is to fit logistic
-regression. If you have interest in knowing more about either
+regression models. If you have interest in knowing more about either
 logistic regression models or modelling approaches in general, [this book](http://www-bcf.usc.edu/~gareth/ISL/ISLR%20Sixth%20Printing.pdf)
 gives an excellent introduction to these topics. 
 
@@ -158,8 +158,7 @@ plotFit <- function(p, fitCCLE, fitGDSC ){
 ```
 
 Now let's use these functions to evaluate the regression fits 
-from the two drug-cell line combinations mentioned in the previous 
-section. Ideally, we would like the regression model to be as 
+from the two drug-cell line combinations mentioned before. Ideally, we would like the regression model to be as 
 close as possible to the individual data points. 
 
 ```{r}
@@ -182,8 +181,8 @@ Notice that these implementations were not based in code from previous
 publications.
 
 Using the logistic models fitted before, let's estimate IC50 
-values by predicting the drug concentration value of the 
-logistic regression model that gives a viability score of 50%. 
+values by predicting the drug concentration value that the 
+logistic regression model predicts to result in a viability score of 50%. 
 
 ```{r}
 
@@ -207,7 +206,7 @@ filter( summarizedData, drug=="Nilotinib", cellLine=="22RV1")[,c("ic50_CCLE", "i
 
 ```
 
-In the same way, let's now calculate AUC values based on the
+Let's now calculate AUC values based on the
 logistic regression model.
 
 ```{r}
@@ -270,7 +269,7 @@ mySummarizedData <- do.call( rbind, mySummarizedData )
 
 ```
 
-Lets compate the scores estimated using code from this vignette between the different studies.
+Lets compare the scores estimated using code from this vignette between the different studies.
 
 ```{r}
 
@@ -285,7 +284,7 @@ ggplot(
   geom_point()
 
 ```
-## Modeling drug response using linear regressions.
+## Modeling drug response using linear models
 
 The function defined below, instead of fitting a logistic regression like the
 function *fitLogisticModel*, fits a linear regression. 
@@ -301,15 +300,15 @@ fitLinearModel <- function(drugA, cellLineA, studyA){
 
 ```
 
-Below is an example on how to use this function and how to extract
-the slope of the linear model
+Below you will find an example on how to use the *fitLinearModel* function and how to extract
+the slope of the linear regression.
 
 ```{r}
 
 linearModelCCLE1 <- fitLinearModel( "17-AAG", "H4", "CCLE" )
-coefficients( linearModelCCLE1 )["concentration"]
+slope1 <- coefficients( linearModelCCLE1 )["concentration"]
 linearModelGDSC1 <- fitLinearModel( "17-AAG", "H4", "GDSC" )
-coefficients( linearModelGDSC1 )["concentration"]
+slope2 <- coefficients( linearModelGDSC1 )["concentration"]
 
 linearModelCCLE2 <- fitLinearModel( "Nilotinib", "22RV1", "CCLE" )
 coefficients( linearModelCCLE2 )["concentration"]
