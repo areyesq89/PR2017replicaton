@@ -176,6 +176,7 @@ Now that we have explored these results visually, is there a way to summarize th
 Without getting into too much detail about the statistic, let's go ahead and see how it is calculated, and compare its values across all the drugs. 
 
 ```{r, matthews}
+# Function to calculate the MCC from two vectors with possible values "Sensitive" and "Resistant"
 mcc <- function (study1, study2)
 {
   BS <- sum(study1 == "Sensitive" & study2 == "Sensitive") 
