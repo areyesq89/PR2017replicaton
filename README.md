@@ -30,3 +30,17 @@ Each tutorial contains text and code that explores various aspects of data scien
 For full reproducibility, this is the script to generate the csv files. This step has already been done for you.
 
 * [`downloadData.R`](https://github.com/areyesq89/PR2017replicaton/blob/master/downloadData.R) : a script that uses the PharmacoGx package to format two datasets (raw and summary level) and save them as CSV files 
+
+## Useful Links:
+
+* [CCLE (Cancer Cell Line Encyclopedia) Study](https://www.ncbi.nlm.nih.gov/pubmed/22460905) from March 2012
+
+* [GDSC (Genomics of Drug Sensitivity in Cancer) Study](https://www.ncbi.nlm.nih.gov/pubmed/22460902) from March 2012
+
+* [Reanalysis of CCLE and GDSC](https://www.ncbi.nlm.nih.gov/pubmed/24284626) from December 2013
+
+* [Commentary 1 on the reanalysis](https://www.ncbi.nlm.nih.gov/pubmed/27905415) from December 2016
+
+* [Commentary 2 on the reanalysis](https://www.ncbi.nlm.nih.gov/pubmed/27905421) from December 2016
+
+* [Commentary 3 on the reanalysis](http://www.nature.com/nature/journal/v540/n7631/full/nature20580.html) from December 2016
