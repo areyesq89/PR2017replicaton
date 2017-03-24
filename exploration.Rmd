@@ -12,9 +12,9 @@ knitr::opts_chunk$set(cache=FALSE)
 Probably the most important step of analyzing datasets is to actually understand 
 the data. This process is crucial to know what kind of questions we can 
 answer with it. This tutorial has code that will help guiding 
-you through this process. Make sure you understand well the experimental design and
-try to link each variable to the experiment. Also, make sure you 
-understand what each of the functions is doing. Feel free to hack the code!
+you through this process. Make sure you understand well the experimental design of the
+two studies and try to link each variable to this experimental design. Also, make sure you 
+understand what each *R* command is doing. Feel free to hack the code!
 
 If you have any question about the code, ask one of the mentors.
 Also remember that [google](www.google.com) is one of the most important tool for 
@@ -90,7 +90,6 @@ drugs? Are these properties consistent across studies?
 ```{r}
 ggplot( pharmacoData, aes( y=viability, x=drug, fill=study) ) +
     geom_boxplot() +
- #   facet_grid(study~.) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=.5)) +
     ylim(0, 200)
 ```

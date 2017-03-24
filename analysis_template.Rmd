@@ -49,9 +49,6 @@ of variables are in the data? What does each column represents?
 6. Plot a histogram of the viability scores as a function of the drug
 doses. Are stronger drug concentrations consistent with lower viability scores?
 
-6. Are there cell-lines that are overall more susceptible to drug exposure?
-(Hint: you can use boxplot to evaluate this)
-
 ### Using Correlation Measures to Assess Replicability of Drug Response Studies
 
 1. Create a scatterplot for each drug comparing the AUC in GDSC and CCLE for all cell lines (hint: code from Tutorial 2 may help).
@@ -64,7 +61,7 @@ doses. Are stronger drug concentrations consistent with lower viability scores?
 
 5. Which drug do you think shows the most consistency between the studies? How about the least? 
 
-6. If you calculated more than one type of correlation coefficient (for example Pearson and Spearman), how do they differ? Which do you think is a better summary of the conistency between the two studies? 
+6. If you calculated more than one type of correlation coefficient (for example Pearson and Spearman), how do they differ? Which do you think is a better summary of the consistency between the two studies? 
 
 7. We have explored Pearson and Spearman correlation, but what about other correlation measures? For example, you could try out distance correlation, which is sensitive to nonlinear relationships. You can find this measure in the `energy` R package, which you'll need to install and load with the following commands:
 
