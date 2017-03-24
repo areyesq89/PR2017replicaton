@@ -9,7 +9,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Replicability of large Pharmacological Studies
 
-Hopefully you have had the chance to explore the features of the CCLE and GDSC drug response datasets. If not, it might be a good idea to check out the vignette on 'Exploratory analysis of pharmacogenomic data' to get a feel for what types of variables the datasets contain, and learn about the difference between the raw dataset, which contains the cell line viability at each drug concentration, and the summarized dataset, which contains numerical summaries of the cell lines response to a drug over all concentrations. We'll briefly explore what this means in the next section.
+Hopefully you have had the chance to explore the features of the CCLE and GDSC drug response datasets. If not, it might be a good idea to check out the tutorial on 'Exploratory analysis of pharmacogenomic data' to get a feel for what types of variables the datasets contain, and learn about the difference between the raw dataset, which contains the cell line viability at each drug concentration, and the summarized dataset, which contains numerical summaries of the cell lines response to a drug over all concentrations. 
+
+In this tutorial we'll learn more about summary measures of drug response, and then use scatterplots and correlation measures to assess the agreement of these summary measures in the two studies. 
 
 ## Summary measurements of drug response
 
@@ -128,7 +130,7 @@ ggplot(aes(x=-log10(ic50_GDSC/10^6), y=-log10(ic50_CCLE/10^6)), data=cellLinesSu
     ylab("-log10(CCLE IC50/10^6)") 
 ```
 
-Compare this plot to Figure 2 in the Haibe-Kains paper. Does it seem to agree?
+Compare this plot to Figure 2 in the Haibe-Kains reanalysis paper. Does it seem to agree?
 
 > Place your answer here
 

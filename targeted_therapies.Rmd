@@ -22,7 +22,7 @@ Andrew Goodspeed, et al. Mol Cancer Res, 2016.
 
 The CCLE and GDSC studies both investigated genomic profiles for all the cell lines that were used to study drug response. The genomic profiles collected included gene expression measurements for more than 10,000 genes in every cell line (measured by microarray) and mutation status for a subset of 64 genes in every cell line (measured by targeted sequencing). We will not have time to explore this data, but it is available through the R package `PharmacoGx` if you wish to explore it for a future project. 
 
-The main finding of Haibe-Kains et al. (2013) was that the genomic profiles of the cell lines used in both studies were highly correlated. What you might have found so far in your explorations of comparing the summary measures of drug response is that the agreement between the studies does not seem as highly reproducible. Part of this may be explained by differences in protocol (which you can see in the different drug concentrations tested in the two studies). In the rest of this vignette, we'll investigate further sources of variation and biological mechanisms that might explain some of this lack of agreement.
+The main finding of Haibe-Kains et al. (2013) (the reanalysis paper) was that the genomic profiles of the cell lines used in both studies were highly correlated. What you might have found so far in your explorations of comparing the summary measures of drug response is that the agreement between the studies does not seem as highly correlated. Part of this may be explained by differences in protocol (which you can see in the different drug concentrations tested in the two studies). In the rest of this tutorial, we'll investigate further sources of variation and biological mechanisms that might explain some of this lack of agreement.
 
 ## Load the summarized pharmacological dataset into the session
 First, we'll read in the .csv file that contains the summarized pharmacological data (including the IC50 and AUC values for each drug and cell line combination, as described above). 
@@ -34,7 +34,7 @@ str(cellLinesSummary)
 
 ## Resistance of Cell lines and the effect on replicability
 
-Something that was not considered in the original comparison analyses by Haibe-Kains et al. was that different cell lines may more or less **resistant** (resistance means that the cell line does not respond to treatment by a drug) to drug treatment than others. Let's explore first why that might be an important factor, and then directly compare cell line sensitivity in the two studies. 
+Something that was not considered in the original comparison analyses by Haibe-Kains et al. reanalysis paper was that different cell lines may more or less **resistant** (resistance means that the cell line does not respond to treatment by a drug) to drug treatment than others. Let's explore first why that might be an important factor, and then directly compare cell line sensitivity in the two studies. 
 
 Consider the following situation: say we have a set of cell lines that are resistant to a particular drug (they don't respond to it). Then we would expect that no matter what dose we give to the cell lines, their viability results would not change (they would stay near 100%). In this case, the AUC (area above the response curve) value would be near zero since the dose-response curve would look flat:
 
@@ -217,7 +217,7 @@ Does this agree with your visual assessment and answers to these same questions 
 
 In addition to sensitivity of cell lines, another biological factor that might have major implications for the perceived replicability of studies is the **targeted** nature of the drugs used. A drug is considered **targeted** if it is expected to have selective activity against some cell lines. The mechanism of impact on perceived replicability is very similar to the impact of sensitivity of cell lines: the response in the cell lines that the drug does *not* target may represent random noise (and we don't expect to observe correlations in random noise). For this reason, some of the followup articles indicated that drugs should be considered separately based on their targeted nature. 
 
-Safikhani et al. describe the following three classes of drugs based on observed responses of the cell lines:
+[Safikhani et al.](https://f1000research.com/articles/5-2333/v1) describe the following three classes of drugs based on observed responses of the cell lines:
 
 * **No effect**: minimal observed resposne for all cell lines
     + sorafenib
